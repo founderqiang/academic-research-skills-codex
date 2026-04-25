@@ -124,6 +124,13 @@ When it points to another workflow, resolve it under `ars/<workflow>/...`.
 When it points to root-level `scripts/...`, `examples/...`, or `docs/...`, resolve
 it under `ars/scripts/...`, `ars/examples/...`, or `ars/docs/...`.
 
+## Inactive Upstream Scripts
+
+`manifest.json` lists `inactive_upstream_scripts` that are vendored for
+traceability but are not Codex package validation gates. Do not wire them into
+Codex CI or treat them as required runtime checks unless the missing upstream
+Claude Code inputs, especially `.claude/CLAUDE.md`, are deliberately supplied.
+
 ## Verification Discipline
 
 For claims, citations, references, statistics, journal policies, API behavior, and

@@ -155,3 +155,11 @@ directories.
 Updates are manual cherry-picks from upstream ARS. Do not mirror the Claude Code
 repo blindly; review path references and Claude-specific runtime language before
 updating this Codex package.
+
+### Inactive Upstream Scripts
+
+Some upstream maintenance scripts are vendored but intentionally inactive in
+this Codex package because they require non-vendored Claude Code inputs such as
+`.claude/CLAUDE.md`. See `inactive_upstream_scripts` in
+`skills/academic-research-suite/manifest.json` before wiring any upstream script
+into Codex CI.
