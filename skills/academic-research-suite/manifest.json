@@ -47,6 +47,16 @@
       "reason": "Requires upstream .claude/CLAUDE.md contract text, which is intentionally not vendored in the Codex package."
     }
   ],
+  "historical_artifacts": [
+    {
+      "path": "skills/academic-research-suite/ars/docs/design/2026-04-23-ars-v3.6.2-sprint-contract-design.md",
+      "disclaimer": "Upstream design/plan document, vendored for traceability. NOT a Codex runtime instruction. References to superpowers:* skills, /Users/imbad/... paths, or Claude Code session describe the upstream development environment."
+    },
+    {
+      "path": "skills/academic-research-suite/ars/docs/design/2026-04-23-ars-v3.6.4-literature-corpus-adapters-plan.md",
+      "disclaimer": "Upstream design/plan document, vendored for traceability. NOT a Codex runtime instruction. References to superpowers:* skills, /Users/imbad/... paths, or Claude Code session describe the upstream development environment."
+    }
+  ],
   "packaging": {
     "type": "single_codex_suite_skill",
     "entrypoint": "skills/academic-research-suite/SKILL.md",
