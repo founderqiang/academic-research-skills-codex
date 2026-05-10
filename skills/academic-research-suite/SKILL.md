@@ -8,10 +8,13 @@ description: >
   academic paper drafting, paper revision, citation or integrity checks,
   reviewer simulation, peer review, editorial decision letters, research-to-paper
   workflows, experiment execution planning, statistical interpretation, or human
-  study protocol support. This skill vendors ARS role prompts, references,
-  templates, and shared handoff schemas under ars/.
+  study protocol support. Also use for Claude-style ARS command aliases such as
+  /ars-plan, ars-plan, /ars-outline, /ars-abstract, /ars-lit-review,
+  /ars-citation-check, /ars-disclosure, /ars-format-convert,
+  /ars-revision-coach, /ars-revision, and /ars-full. This skill vendors ARS
+  role prompts, references, templates, and shared handoff schemas under ars/.
 metadata:
-  version: "0.1.1"
+  version: "0.1.3"
   upstream_suite: "academic-research-skills"
   codex_adapter: true
 ---
@@ -23,7 +26,7 @@ This is a Codex adapter for the ARS suite. The vendored ARS content lives under
 
 ## Versioning
 
-This Codex package is version `0.1.1`. The repo-root `VERSION`, this
+This Codex package is version `0.1.3`. The repo-root `VERSION`, this
 `SKILL.md` metadata version, and `manifest.json` `adapter_version` must match.
 Vendored ARS suite versions are tracked separately by source repository commit
 in `manifest.json`.
@@ -49,6 +52,33 @@ Choose the workflow by intent:
 If the request spans multiple workflows, start with `ars/academic-pipeline/SKILL.md`
 unless the user clearly asked for a single phase.
 
+## Claude-Style Alias Router
+
+Codex does not install Claude slash commands, but this package emulates their
+intent. If the user's request starts with a slash alias (`/ars-plan`) or a plain
+alias (`ars-plan`), treat it as a mode shortcut, strip the alias token from the
+task text, read the matching `ars/commands/ars-*.md` prompt recipe, then route
+to the workflow `SKILL.md` below.
+
+The `model:` field in command frontmatter is a Claude routing hint only. Codex
+uses the current model unless the user explicitly requests another model.
+
+| Alias | Read command recipe | Then route to |
+|---|---|---|
+| `/ars-plan`, `ars-plan` | `ars/commands/ars-plan.md` | `ars/academic-paper/SKILL.md` in `plan` mode |
+| `/ars-outline`, `ars-outline` | `ars/commands/ars-outline.md` | `ars/academic-paper/SKILL.md` in `outline-only` mode |
+| `/ars-abstract`, `ars-abstract` | `ars/commands/ars-abstract.md` | `ars/academic-paper/SKILL.md` in `abstract-only` mode |
+| `/ars-lit-review`, `ars-lit-review` | `ars/commands/ars-lit-review.md` | `ars/academic-paper/SKILL.md` in `lit-review` mode; if the user wants source discovery and synthesis instead, route to `ars/deep-research/SKILL.md` in `lit-review` mode |
+| `/ars-citation-check`, `ars-citation-check` | `ars/commands/ars-citation-check.md` | `ars/academic-paper/SKILL.md` in `citation-check` mode |
+| `/ars-disclosure`, `ars-disclosure` | `ars/commands/ars-disclosure.md` | `ars/academic-paper/SKILL.md` in `disclosure` mode |
+| `/ars-format-convert`, `ars-format-convert` | `ars/commands/ars-format-convert.md` | `ars/academic-paper/SKILL.md` in `format-convert` mode |
+| `/ars-revision-coach`, `ars-revision-coach` | `ars/commands/ars-revision-coach.md` | `ars/academic-paper/SKILL.md` in `revision-coach` mode |
+| `/ars-revision`, `ars-revision` | `ars/commands/ars-revision.md` | `ars/academic-paper/SKILL.md` in `revision` mode |
+| `/ars-full`, `ars-full` | `ars/commands/ars-full.md` | `ars/academic-pipeline/SKILL.md` |
+
+If the Codex client reserves slash-prefixed input before it reaches the model,
+tell the user to use the plain alias form, for example `ars-plan my topic`.
+
 ## Codex Runtime Mapping
 
 The upstream ARS files were written for Claude Code. Apply these mappings when
@@ -64,6 +94,8 @@ using them in Codex:
 | Claude, Claude Code, model-specific wording | Interpret as "the current Codex agent" unless the text is part of a disclosure template or historical example. |
 | `ARS_CROSS_MODEL`, `ARS_CROSS_MODEL_SAMPLE_INTERVAL` | Treat upstream secondary-model dispatch instructions as no-op unless the user explicitly asks for cross-model review. When explicitly enabled in this Codex package, use Anthropic Claude Opus 4.7 via API (`ARS_CROSS_MODEL=claude-opus-4.7`, `ANTHROPIC_API_KEY`); do not route this reviewer through Codex/OpenAI APIs. Skip unconfigured cross-model report sections instead of inventing results. |
 | `fresh Claude Code session`, `Claude Code session` | Read as "a new Codex conversation". Material Passport reset semantics still apply; only the runtime changes. This rule covers `ars/academic-pipeline/SKILL.md`, `ars/academic-pipeline/agents/pipeline_orchestrator_agent.md`, `ars/academic-pipeline/references/passport_as_reset_boundary.md`, `ars/experiment-agent/README.md`, `ars/experiment-agent/README.zh-TW.md`, and `ars/docs/PERFORMANCE.md`. |
+| `/ars-*` slash command, Claude plugin command | Treat `ars/commands/ars-*.md` as optional prompt recipes. Codex does not register slash commands from this package. |
+| SessionStart hook, SubagentStop hook, `hooks/hooks.json` | Treat as upstream Claude Code hook metadata only. Do not install or execute Claude hooks in Codex unless the user explicitly asks to inspect or port a hook. |
 
 ## Agent Prompt Use
 
@@ -126,6 +158,9 @@ Use `ars/shared/` for cross-workflow contracts and quality gates:
 - `ars/scripts/` contains upstream validators and reference adapters.
 - `ars/examples/` contains upstream non-PDF fixtures and templates.
 - `ars/docs/design/` contains upstream design specs referenced by ARS protocols.
+- `ars/commands/` contains upstream Claude slash-command prompt recipes.
+- `ars/hooks/` contains upstream Claude hook metadata preserved for traceability.
+- `ars/tests/` contains upstream fixture corpora used by validator tests.
 
 When an ARS file points to `shared/...`, resolve it as `ars/shared/...`.
 When it points to another workflow, resolve it under `ars/<workflow>/...`.
@@ -138,6 +173,10 @@ it under `ars/scripts/...`, `ars/examples/...`, or `ars/docs/...`.
 traceability but are not Codex package validation gates. Do not wire them into
 Codex CI or treat them as required runtime checks unless the missing upstream
 Claude Code inputs, especially `.claude/CLAUDE.md`, are deliberately supplied.
+
+`ars/scripts/run_codex_audit.sh` is vendored because upstream ARS uses it as a
+Codex audit wrapper, but follow its own guardrail: it must not be invoked from
+the same in-LLM session that produced the audited deliverable.
 
 ## Verification Discipline
 

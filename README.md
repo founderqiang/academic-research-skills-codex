@@ -15,6 +15,10 @@ skills/academic-research-suite/
     academic-paper-reviewer/
     academic-pipeline/
     experiment-agent/
+    commands/
+    hooks/
+    docs/
+    tests/
     shared/
 ```
 
@@ -34,11 +38,14 @@ Use this repo when you want the Codex-native single-suite skill.
 
 ## Versioning
 
-This Codex package is version `0.1.1`. The repo-root `VERSION` file,
+This Codex package is version `0.1.3`. The repo-root `VERSION` file,
 `skills/academic-research-suite/SKILL.md` metadata version, and
 `skills/academic-research-suite/manifest.json` `adapter_version` track the
 Codex package version independently of the vendored ARS suite. Vendored upstream
 versions are recorded by commit in `manifest.source_repositories[]`.
+
+The vendored ARS source currently tracks
+`Imbad0202/academic-research-skills@1d0c8625207c9cd8fc46132b1ef930f2cc012236`.
 
 ## Install
 
@@ -51,6 +58,14 @@ python /Users/imbad/.codex/skills/.system/skill-installer/scripts/install-skill-
 ```
 
 Restart Codex after installation.
+
+## Codex Docs
+
+- [Codex setup](skills/academic-research-suite/ars/docs/SETUP.md) covers
+  installation, `ars-*` aliases, optional tools, Material Passport adapters,
+  and unsupported Claude plugin features.
+- [Codex architecture](skills/academic-research-suite/ars/docs/ARCHITECTURE.md)
+  explains the logical ARS pipeline with the Codex runtime overlay.
 
 ## Usage
 
@@ -72,6 +87,42 @@ The Codex adapter routes the request to one of five ARS workflows:
 | `academic-paper-reviewer` | Manuscript review, simulated peer review, editorial decision, re-review | `Use $academic-research-suite to review this manuscript and produce a journal-style decision letter.` |
 | `academic-pipeline` | End-to-end research-to-paper workflow with integrity gates, review, revision, and final checks | `Use $academic-research-suite to run an end-to-end research-to-paper pipeline from topic to revised manuscript.` |
 | `experiment-agent` | Code experiment planning, human study protocol, statistical interpretation, reproducibility validation | `Use $academic-research-suite to plan a code experiment and define reproducibility checks.` |
+
+### Claude-Style Aliases
+
+Claude Code v3.7 installs `/ars-*` slash commands. Codex does not have the same
+plugin command registry, so this package emulates the command intent inside the
+single `$academic-research-suite` skill. Use either form:
+
+```text
+Use $academic-research-suite: ars-plan my paper on AI governance in universities.
+```
+
+or, when your Codex client passes slash-prefixed text through as a normal user
+message:
+
+```text
+/ars-plan my paper on AI governance in universities.
+```
+
+If slash input is intercepted by the client, use the plain alias form:
+
+```text
+ars-plan my paper on AI governance in universities.
+```
+
+| Claude command | Codex alias | Routed workflow |
+|---|---|---|
+| `/ars-plan` | `ars-plan` | `academic-paper` `plan` mode |
+| `/ars-outline` | `ars-outline` | `academic-paper` `outline-only` mode |
+| `/ars-abstract` | `ars-abstract` | `academic-paper` `abstract-only` mode |
+| `/ars-lit-review` | `ars-lit-review` | `academic-paper` `lit-review` mode |
+| `/ars-citation-check` | `ars-citation-check` | `academic-paper` `citation-check` mode |
+| `/ars-disclosure` | `ars-disclosure` | `academic-paper` `disclosure` mode |
+| `/ars-format-convert` | `ars-format-convert` | `academic-paper` `format-convert` mode |
+| `/ars-revision-coach` | `ars-revision-coach` | `academic-paper` `revision-coach` mode |
+| `/ars-revision` | `ars-revision` | `academic-paper` `revision` mode |
+| `/ars-full` | `ars-full` | `academic-pipeline` full workflow |
 
 ### Working Pattern
 
@@ -110,6 +161,10 @@ Begin with Stage 0 intake and stop after producing the pipeline dashboard.
 ARS was originally written for Claude Code. In this Codex package:
 
 - The vendored `agents/*.md` files are used as role and phase prompts.
+- The vendored `commands/ars-*.md` files are prompt recipes only. Codex does not
+  register them as slash commands.
+- The vendored `hooks/hooks.json` file is preserved for upstream traceability
+  only. Codex does not install Claude Code hooks from this package.
 - Codex does not automatically spawn background agents unless you explicitly ask
   for delegated or parallel agent work.
 - Web/source verification uses Codex browsing and must cite sources when current
@@ -124,12 +179,29 @@ ARS was originally written for Claude Code. In this Codex package:
 - If a citation, source, statistic, or journal policy cannot be verified, Codex
   should mark it as unverified rather than invent support.
 
+### Claude v3.7 Parity
+
+This package aims for the same user-facing workflow shape as the Claude Code
+v3.7 plugin where Codex has an equivalent concept.
+
+| Claude v3.7 feature | Codex package behavior |
+|---|---|
+| One installable plugin | One installable Codex skill at `skills/academic-research-suite` |
+| `/ars-*` slash commands | Emulated as `ars-*` aliases through the skill router; not native slash commands |
+| Four upstream skills auto-discovered from `skills/` symlinks | Single Codex router skill selects the workflow and reads the vendored workflow `SKILL.md` |
+| Plugin-shipped agents | Agent files are role/phase prompts; Codex runs them inline unless the user explicitly asks for delegated subagents |
+| `model: opus` / `model: sonnet` command routing | Treated as Claude metadata; Codex uses the active model |
+| SessionStart and SubagentStop hooks | Vendored for traceability only; Codex does not install or execute Claude hooks |
+| Plugin marketplace update / auto-update | Not available here; update by reinstalling or pulling this Codex repo |
+| Claude Code Agent Team | Not automatic; Codex subagents require an explicit user request for delegation or parallel agents |
+| Cross-model GPT/Gemini dispatch from upstream docs | Disabled; Codex package only supports optional Anthropic Claude Opus 4.7 review when explicitly configured |
+
 ### Optional Claude Opus 4.7 Reviewer API
 
 For reviewer calibration or cross-model devil's advocate checks:
 
 ```bash
-export ANTHROPIC_API_KEY="sk-ant-your-key-here"
+export ANTHROPIC_API_KEY="<your-anthropic-api-key>"
 export ARS_CROSS_MODEL="claude-opus-4.7"
 ```
 
@@ -163,9 +235,10 @@ directories.
 
 ## Update Policy
 
-Updates are manual cherry-picks from upstream ARS. Do not mirror the Claude Code
-repo blindly; review path references and Claude-specific runtime language before
-updating this Codex package.
+Updates sync selected upstream ARS content into `skills/academic-research-suite/ars/`.
+Do not mirror the Claude Code repo blindly; exclude Claude/plugin loader files
+such as `.claude/`, `.claude-plugin/`, `.github/`, source `.gitignore`, and
+symlink-only alias directories that are not needed in Codex.
 
 ### Inactive Upstream Scripts
 

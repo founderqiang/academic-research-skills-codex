@@ -4,6 +4,539 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (v3.6.7 Step 6 Phase 6.8 — Step 8 evaluation case)
+
+- **17 micro-fixtures + 1 chapter-level integration fixture** under
+  `tests/fixtures/v3_6_7_pattern_eval/` exercising the 17 numbered downstream
+  -agent patterns (A1–A5, B1–B5, C1–C3, D1–D4) per spec §7. Each micro
+  fixture: `manifest.json` (`fixture_kind: "micro"`) + `upstream_context/`
+  (`passport_snippet.yaml` + `prior_artifacts/`) + `bad_run/` + `good_run/`
+  with `deliverable.md`, `expected_audit_findings.yaml`,
+  `expected_orchestrator_action.yaml`. Integration fixture under
+  `integration/chapter_level_run/` exercises A3+C2+D4+C1 across 3-round
+  MATERIAL escalation → ship_with_known_residue acknowledgement per §7.3.
+- **`scripts/check_pattern_eval_manifest.py`** — fixture_kind discriminator
+  routing micro (§7.2) vs integration (§7.3) JSON Schema 2020-12 manifest
+  schemas; `audit_verdict.schema.json` validation on every
+  `expected_audit_findings.yaml`; path-safety rejects absolute paths and `..`
+  segments; coverage cross-check enforces 17/17 numbered IDs covered (with
+  hard-fail on unknown directory names per §7.5).
+- **`scripts/test_pattern_eval_runtime.py`** — 112-test parametrized harness
+  reading expected verdicts as synthesized output and asserting against
+  expected orchestrator action. Per-pattern parametrized tests (BAD signal +
+  GOOD passes + run_id F1 regex + BAD/GOOD uniqueness); integration state
+  runner driving §7.3 5-step procedure (load verdicts → drive §5.6 → verify
+  pipeline state per round → feed escalation user_response → verify final
+  passport state); Path A re-verification axis (≥6 A7 happy-path legs at
+  rounds 2+3); finding-id lineage carry-forward per audit-template Section 6;
+  per-phase synthetic injections (24 of 26 PHASE_TO_PASSPORT_MUTATION rows
+  validated for "none" / "appended"); A1.5 supersession-preflight axis tests.
+- **`scripts/test_run_codex_audit_e2e.py`** — Phase 6.1 deferred end-to-end
+  dispatch test (Linux Bash 4+ only; macOS stock Bash 3.2 self-skips). Mocks
+  codex CLI via PATH-prefix shim emitting canonical Phase 2 JSONL stream.
+  Validates wrapper produces 4 contract files + 3 diagnostic files; proposal
+  entry validates against `audit_artifact_entry.schema.json --mode proposal`
+  (Pattern C3 defense — `verified_at`/`verified_by` absent); `--dry-run`
+  writes nothing; `--round=2` without `--previous-findings` rejected with
+  `EX_USAGE`.
+- **`.github/workflows/spec-consistency.yml`** — 4 new CI steps: Phase 6.8
+  manifest validation, pattern-eval-unit (micro fixtures + phase inventory +
+  synthetic non-supersession), pattern-eval-integration (integration fixture
+  + synthetic supersession), Phase 6.1 wrapper E2E (Linux runner only).
+- **`docs/design/TODO-l-doc-1-18-patterns-prose-retirement.md`** — files
+  L-doc-1 follow-up enumerating 8 retirement locations for the docs-only PR
+  retiring "18 patterns" prose to "17 patterns" per §9.2.
+- **Spec amendments** at `docs/design/2026-04-30-ars-v3.6.7-step-6-orchestrator
+  -hooks-spec.md`: §7.4 success criterion 1 prose updated for C2 MINOR
+  special case + D2 PASS convergence-policy assertion; §7.4 phase example
+  updated `escalation` → `B11`; §7.6 deployment note explaining named-step
+  CI deployment (vs literal "two separate jobs"); §9.2 L-doc-1 row points at
+  the TODO file; §7.3 example manifest snippet updated to F-101/F-103.
+
+### Notes
+
+- **11 codex review rounds converged to 0 findings**. Cumulative 24
+  findings closed (4 P1 + 18 P2 + 2 P3) across rounds 1-10.
+- 135 Phase 6.8-specific tests; total repo regression 742 pytest + 251
+  unittest = 993 green + 3 skipped (macOS Bash 3.2 wrapper E2E gate).
+- v3.6.7 Step 6 + Step 8 now structurally complete: prompt-level pattern
+  protection (Step 1+2) + version sweep (Step 7) + runtime audit-artifact
+  gate (Step 6 §1-§11 + Phases 6.1-6.7) + synthetic evaluation case
+  (Phase 6.8) deliver the §10 ship-quality target.
+
+## [3.7.0] - 2026-05-05
+
+> **Claude Code plugin packaging.** ARS now installs in one line on Claude Code
+> CLI / VS Code / JetBrains via `/plugin marketplace add Imbad0202/academic-research-skills`
+> + `/plugin install academic-research-skills`. The traditional
+> `git clone + symlink to ~/.claude/skills/` flow continues to work — both
+> tracks are first-class.
+
+### Added
+
+- **Plugin manifest + marketplace metadata** (Phase 1, PR #68).
+  `.claude-plugin/plugin.json` declares the suite. `.claude-plugin/marketplace.json`
+  registers the plugin so a single GitHub-hosted endpoint serves both the
+  marketplace listing and the plugin source. `skills/` directory carries
+  relative symlinks to the four existing skill directories so the plugin
+  loader auto-discovers them without moving repo layout.
+- **10 slash commands** at `commands/ars-*.md` (Phase 2.1, PR #69) mapping
+  `MODE_REGISTRY.md` entries to `/ars-<mode>` triggers. Model routing pinned
+  in each command's frontmatter — `opus` for `full` and `revision-coach`
+  (architectural / review-interpretation depth), `sonnet` for the other 8.
+  No Haiku per `feedback_no_haiku.md`.
+- **3 plugin-shipped agents** at `agents/*_agent.md` (Phase 2.1, PR #69)
+  as relative symlinks to the v3.6.7-hardened downstream agents in
+  `deep-research/agents/`: `synthesis_agent`, `research_architect_agent`,
+  `report_compiler_agent`. Underscore filenames preserved to match
+  `scripts/check_v3_6_7_pattern_protection.py` hard-pinned paths and the
+  INV-3 manifest-confined Clause 1 invariant. Symlinks (not copies) preserve
+  a single source of truth and prevent the Pattern C3 attack surface that
+  v3.6.7 §6 inversion sweep + INV-1/2/3 lint closes.
+- **`model: inherit`** added to those three source agent frontmatters
+  (PR #69 R1 codex finding). Inherit chosen over pinning `sonnet` so an
+  Opus session running the full pipeline keeps Opus agents (instead of
+  being capped) while the user's existing PreToolUse `warn-agent-no-model.sh`
+  hook gates Haiku at the dispatch boundary.
+- **SessionStart announce hook** at `hooks/hooks.json` +
+  `scripts/announce-ars-loaded.sh` (Phase 2.2, PR #70). When the plugin
+  loads, the hook injects `additionalContext` listing the 10 slash commands,
+  the 3 plugin agents, and a token-budget pointer into the LLM's first
+  turn. `startup` and `clear` source values get the full announce; `resume`
+  and `compact` get a one-line ack to avoid burning context on every
+  resume. Bash 3.2 compatible — runs on macOS stock `/bin/bash` with no
+  `brew install bash` requirement. `${CLAUDE_PLUGIN_ROOT}` quoted for
+  install paths containing spaces.
+- **`docs/PERFORMANCE.md` + `.zh-TW.md`** subsection
+  "v3.7.0 Plugin agents and model routing" explaining `model: inherit`
+  semantics and the current 3-agent scope boundary.
+- **`docs/ARCHITECTURE.md`** Evolution Timeline extended with v3.6.7 / v3.6.8 /
+  v3.7.0 entries.
+- **README + README.zh-TW** version badge bumped to v3.7.0; Pipeline section
+  heading bumped to v3.7; CHANGELOG entry added.
+
+### Deferred (future release)
+
+- **SubagentStop → `run_codex_audit.sh` codex audit hook** (Phase 2.2 scope
+  reduction). Two compounding reasons: (a) wrong invoker class —
+  `run_codex_audit.sh` lines 4–7 forbid same-session in-LLM invocation
+  (Pattern C3 attack surface), and the original PostToolUse Write|Edit
+  matcher would fire from inside the producing session; (b) contract gap —
+  the SubagentStop hook payload carries no stage/deliverable info, so a
+  wrapper would have to half-infer those required arguments. Real
+  audit-hook integration deferred to a future release when ARS gains a stage/deliverable
+  propagation contract. See
+  `docs/design/2026-04-30-ars-v3.7.0-plugin-packaging-roadmap.md`
+  Update note 2026-05-05 (Phase 2.2 scope reduction).
+
+### Changed
+
+- `academic-pipeline/SKILL.md` frontmatter `version: "3.7.0"` + H1 +
+  Version Info table.
+- `MODE_REGISTRY.md` Last updated bumped to `v3.7.0 (2026-05-05)`.
+- `.claude/CLAUDE.md` Skills Overview row + Suite version footer bumped
+  to 3.7.0.
+- `scripts/check_spec_consistency.py` lint pins (Suite version, README
+  badge, MODE_REGISTRY heading, CHANGELOG section heading) bumped to
+  v3.7.0.
+
+### Unchanged
+
+The four skill directories, all 25 modes, agent prompts, schema files,
+and lint contracts. Plugin packaging only adds new top-level surface
+(`commands/`, `agents/`, `hooks/`, `.claude-plugin/`, `skills/` symlink
+dir, three plugin-agent `model: inherit` frontmatter additions).
+Existing 4.3k clone-install users see no breaking change.
+
+### Codex review chain
+
+8 inline iterative rounds + 3 fresh PR-level rounds across the three
+PRs (#68 / #69 / #70), all converging to 0 P0/P1/P2 findings before
+merge. The Phase 2.2 fresh PR review caught one P2 (unquoted
+`${CLAUDE_PLUGIN_ROOT}` breaking install paths with spaces) that the
+inline rounds missed — confirms the value of separating implementation
+review (inline) from contract / install-time review (fresh).
+Reference: `feedback_codex_review_vs_resume_audit_scope.md`.
+
+## [3.6.8] - 2026-05-03
+
+> **Naming note**: this release ships the **v3.6.6 generator-evaluator contract**
+> spec (`docs/design/2026-04-27-ars-v3.6.6-generator-evaluator-contract-design.md`)
+> and its implementation. The v3.6.6 work landed after v3.6.7 due to project
+> sequencing; the design doc retains the v3.6.6 internal naming for the
+> contract gate version (`writer_full` / `evaluator_full` mode, Schema 13.1,
+> `pre_commitment_artifacts` + `disagreement_handling` schema fields), while
+> the suite release is tagged v3.6.8 to keep the CHANGELOG monotonic.
+
+### Added
+
+- **Schema 13.1 generator-evaluator contract gate** for `academic-paper full`
+  mode (`shared/sprint_contract.schema.json`, design doc §3): two new `mode`
+  enum values (`writer_full` + `evaluator_full`); two new optional top-level
+  fields (`pre_commitment_artifacts` writer-only with
+  `acceptance_criteria_paraphrase.minimum_dimensions`; `disagreement_handling`
+  evaluator-only with `paraphrase_minimum_dimensions` + `scoring_plan` +
+  `pre_commitment_check_protocol` + `disagreement_resolution`); 12 `allOf`
+  branches enforcing reviewer- / writer- / evaluator-conditional gates
+  (existing 2 + 10 new per design doc §3.5 table).
+- **Two new shipped contract templates**: `shared/contracts/writer/full.json`
+  (writer dimensions D1 section_completeness / D2 citation_density /
+  D3 argument_blueprint_fidelity / D4 total_word_count /
+  D5 per_section_word_count / D6 acknowledged_limitations /
+  D7 register_consistency; F-conditions F1/F4/F2/F3/F0; no `scoring_plan`)
+  and `shared/contracts/evaluator/full.json` (evaluator dimensions
+  D1 originality / D2 methodological_rigor / D3 evidence_sufficiency /
+  D4 argument_coherence / D5 writing_quality; F-conditions F1/F2/F3/F6/F4/F5/F0;
+  full `scoring_plan` + `disagreement_handling`). Templates already shipped on
+  the spec branch as design-time artefacts since 2026-04-28; this release
+  promotes them to live status atomically with the Schema 13.1 upgrade.
+- **Two-phase orchestration inside `academic-paper full` mode** (design doc §5):
+  Phase 4 splits into Phase 4a paper-blind writer pre-commitment + Phase 4b
+  paper-visible drafting + self-scoring. Phase 6 splits into Phase 6a
+  paper-blind evaluator pre-commitment + Phase 6b paper-visible scoring +
+  decision. Phase-numbered `<phase4a_output>` / `<phase6a_output>` data
+  delimiters mirror the v3.6.2 reviewer pattern. Lint counts: writer 3+4 /
+  evaluator 5+5 / reviewer 5+6 (reviewer surfaces remain zero-touch per §3.6).
+  `[GENERATOR-PHASE-ABORTED]` abort tag with 5% / three-month operational
+  monitor.
+- **`academic-paper/SKILL.md` `## v3.6.6 Generator-Evaluator Contract Protocol`
+  orchestration block** (101 lines): four-call structure with system-vs-user
+  content discipline, schema-vs-runtime emission distinction, per-phase lint,
+  abort handling, two valid Stage 3 entry paths (standard F0/F4 + exceptional
+  F5), cross-session resume scope. Plus a new `## Known limitations` section
+  carrying the graceful-degradation forward note (v3.6.7 candidate) + the
+  cross-session resume `pre_commitment_history[]` forward note (v3.6.7+
+  candidate) + in-pair Phase 6 evaluator vs external `academic-paper-reviewer`
+  tech debt.
+- **`academic-paper/agents/draft_writer_agent.md` + `peer_reviewer_agent.md`**
+  each gain a verbatim `## v3.6.6 Generator-Evaluator Contract Protocol`
+  section with the system-prompt sub-sections for Phase 4a/4b (writer) and
+  Phase 6a/6b (evaluator). The orchestrator includes the relevant sub-section
+  verbatim in the system prompt for the corresponding call; user content
+  carries contract JSON, paper metadata, delimiter blocks, and upstream
+  artefacts per the SKILL.md discipline.
+- **`scripts/check_sprint_contract.py` SC-* mode-gating audit** (per §7.1
+  implementation requirement): SC-5 (measurement_procedure canonical outputs)
+  and SC-11 (panel_size sanity) now mode-gated to
+  `mode.startswith("reviewer_")` so they do not noise on clean writer /
+  evaluator templates. SC-9 (paraphrase_minimum_dimensions exceeds dim count)
+  extended across all three mode families: reviewer reads
+  `mp.paraphrase_minimum_dimensions`, writer reads
+  `pre_commitment_artifacts.acceptance_criteria_paraphrase.minimum_dimensions`,
+  evaluator reads `disagreement_handling.paraphrase_minimum_dimensions`.
+  Mode-agnostic warnings (SC-1 baseline lag, SC-2 single dimension, SC-3 no
+  mandatory, SC-4 orphan dim ref, SC-7 conflicting actions, SC-10 unreferenced
+  mandatory/high) unchanged.
+- **17 new validator tests** (54 → 71 total): 4 writer/evaluator template
+  positive tests; 5 schema-branch negative tests covering branches 11 / 12 /
+  4 / 5 / 6 hard-fail (cross-mode field leakage intentionally NOT a v3.6.6
+  hard-fail per §7.1 R1 settled — v3.7.x `not`-clause hardening is the
+  long-term fix); 2 §3.6 reviewer regression tests
+  (`test_existing_reviewer_contracts_still_valid_under_13_1` +
+  `test_byte_equivalent_validation_for_reviewer_contracts`); 6 SC-5/SC-9/SC-11
+  mode-gating tests.
+- **`scripts/check_v3_6_6_ab_manifest.py`** (new) implements the §7.5 manifest
+  CI lint: schema-shape checks per §6.2 (top-level required fields with
+  declared types; per-paper required fields; paper_id uniqueness; aggregate
+  role counts 6+1; paper-A paper_type families 3 × 2; paper-A required
+  judge_output_baseline; paper-C must-have known_failure_mode +
+  failure_evidence; paper-C must-not-have judge / metrics fields);
+  path-existence checks (mode-conditional + populated-optional);
+  reverse-scan against fixture-orphans; exit-1-on-malformed-YAML mirrors
+  `check_sprint_contract.py` convention.
+- **`.github/workflows/spec-consistency.yml`** extends the "Validate sprint
+  contract templates" step to iterate writer + evaluator template directories
+  alongside the existing reviewer loop, and adds a new "Validate v3.6.6 A/B
+  fixture manifest" step running the new manifest CI lint script as an
+  additional step inside the existing `spec-consistency` job.
+- **`tests/fixtures/v3.6.6-ab/` A/B evidence fixture stub** (30 files):
+  manifest.yaml + README.md + 6 paper-A inputs/baseline + 1 paper-C
+  inputs/baseline + Stage 3 reviewer excerpt + 6 codex-judge baseline
+  placeholders. `manifest_lint_mode: spec_branch`, `fixture_version: 0.1.0`.
+  Each placeholder explains the expected populated content; real fixture data
+  (existing deep-research synthesis reports for paper-A; v3.6.5 session log
+  + Stage 3 reviewer excerpt for paper-C; codex gpt-5.5 + xhigh judge runs
+  against paper-A baseline) populates in follow-up commits before the
+  v3.6.6 implementation work fully completes.
+- **`academic-paper-reviewer/references/sprint_contract_protocol.md`
+  cross-reference** noting Schema 13.1 since v3.6.6 + pointing readers at
+  `academic-paper/SKILL.md` + design doc §5 for the parallel
+  generator-evaluator protocol. The reviewer protocol itself is byte-equivalent
+  across v3.6.2 → v3.6.8 (zero-touch promise per §3.6).
+
+### Changed
+
+- **Suite version**: v3.6.7 → v3.6.8 (per the naming note above; design doc
+  retains v3.6.6 for the contract gate version).
+- **`academic-pipeline` skill version** bumped from v3.6.7 to v3.6.8 in the
+  `.claude/CLAUDE.md` Skills Overview table.
+
+### Deferred
+
+- **Real fixture data populate** for `tests/fixtures/v3.6.6-ab/` (30
+  placeholders → real paper-A inputs + baseline + paper-C session log + codex
+  judge runs) lands in follow-up commits.
+- **Treatment runs** (writer Phase 4a/4b + evaluator Phase 6a/6b on the seven
+  fixtures), **codex judge against treatment**, and **metrics computation
+  + summary.md** require actual `academic-paper full` invocations + Semantic
+  Scholar API + codex CLI runs; deferred to follow-up commits before the
+  fixture-completeness work concludes.
+- **manifest_lint_mode flip** from `spec_branch` to `implementation_pr`
+  co-lands with the treatment population in the same atomic merge state per
+  §6.5 invariant 3.
+- **ROADMAP §3.6.4 description correction** per design doc §9.3 ("Extend
+  v3.6.2 sprint contract pattern to the existing `academic-paper`
+  writer/evaluator pair via contract-gated phase splits and Schema 13.1
+  conditional gates. No new agent files; existing `draft_writer_agent` and
+  `peer_reviewer_agent` gain per-phase sub-section instructions") lands in
+  the private ROADMAP.md (gitignored, lives in claude-memory-sync), not in
+  this repo PR.
+
+## [3.6.7] - 2026-04-30
+
+### Added
+
+- **Downstream-agent pattern protection layer** (`docs/design/2026-04-29-ars-v3.6.7-downstream-agent-pattern-protection-spec.md`).
+  Hardens three downstream agents against 18 hallucination/drift patterns
+  documented in the spec: `synthesis_agent` (A1–A5 narrative-side), the
+  survey-designer mode of `research_architect_agent` (B1–B5 instrument-side),
+  and the abstract-only mode of `report_compiler_agent` (C1–C3 publication-
+  side), plus four cross-cutting patterns (D1–D4). Patterns observed in
+  production output across multiple chapter-length runs.
+- **Four reference files in `shared/references/`** carrying the operational
+  contracts that protection clauses cite:
+  - `irb_terminology_glossary.md` — anonymity vs confidentiality vs
+    de-identification vs pseudonymization (B1).
+  - `psychometric_terminology_glossary.md` — true reverse-coded vs contrast
+    item, with construct-equivalence rule (B2).
+  - `protected_hedging_phrases.md` — five-rule contract for upstream-marked
+    hedge protocol (conservative inclusion, anchor every entry, no
+    duplicates, verbatim preservation, conflict reporting) (C1).
+  - `word_count_conventions.md` — whitespace-split standard (`body.split()`),
+    3–5% buffer below hard cap, publisher conventions (C1).
+- **Cross-model audit prompt template** at
+  `shared/templates/codex_audit_multifile_template.md` — seven audit
+  dimensions (cross-ref, hallucination, primary-source integrity, internal
+  coherence, instrument quality, Round-N framing, COI adequacy) plus a
+  mandatory three-part Section 4(f) check for `report_compiler_agent`
+  bundles (whitespace-split cap-minus-buffer, protected-hedge verbatim,
+  abstract no less hedged than body — failure of any sub-check is P1).
+- **Static lint** at `scripts/check_v3_6_7_pattern_protection.py` enforcing
+  protection-clause presence and obligation-phrase shape across the
+  reference files, audit template, and three downstream agent prompts.
+  Per-regex `allow_prohibition` flag scopes the prohibition exemption so
+  prohibition-style obligations (`DO NOT simulate`, `must not claim
+  audit-passed state`, `does not paraphrase`) do not leak the exemption to
+  assertion-style obligations on the same Check. Span-restricted exemption
+  rejects a second prohibition elsewhere in the bullet. Modal/advisory
+  weakener coverage: `may`, `should`, `can`, `will`, `would`, `ought to`,
+  `ideally`, `preferably`, `We recommend that`, `is/are recommended`,
+  `is/are allowed`, `is/are permitted`, plus exception qualifiers
+  (`except`, `unless`, `save when`).
+- **Mutation test suite** at
+  `scripts/test_check_v3_6_7_pattern_protection.py` with 29 tests
+  preserving codex review evidence (R2–R6). Future checker regressions
+  surface in CI rather than only in ad-hoc mutation runs.
+- **CI wiring** in `.github/workflows/spec-consistency.yml` runs both the
+  static lint and the mutation suite on every push and pull request.
+
+### Changed
+
+- **`deep-research/agents/synthesis_agent.md`** carries a `PATTERN
+  PROTECTION (v3.6.7)` block with five clauses covering effect-inventory
+  cross-section consistency self-check, pending-verification hedge wrap,
+  one-line anchor justification, verbatim phrase boundary on quotes, and
+  the prohibition on declarative claims about un-provided documents
+  (with conditional-language fallback).
+- **`deep-research/agents/research_architect_agent.md`** survey-designer
+  mode carries a `PATTERN PROTECTION (v3.6.7)` block with five clauses
+  covering IRB terminology pass-through, reverse-coded construct-
+  equivalence justification, event-anchored retrospective default
+  (calendar-anchored only when sample shares a common event date),
+  neutral-balanced item phrasing with chapter argument vocabulary
+  forbidden, and primary-source list enumerate-fully (no subsetting,
+  no over-setting, no scope cross-contamination).
+- **`deep-research/agents/report_compiler_agent.md`** abstract-only mode
+  carries a `PATTERN PROTECTION (v3.6.7)` block with three clauses
+  covering whitespace-split word budget plus 3–5% buffer with budget-
+  protected hedges, explicit-temporal-bounds reflexivity disclosure
+  (year range / past-tense disambiguating verb / "former" prefix; deictic
+  phrases forbidden), and the anti-fake-audit guard (DO NOT simulate any
+  audit step; DO NOT claim to have run codex/external review; output
+  metadata must not claim audit-passed state).
+
+### Notes
+
+- v3.6.7 ships in two stages. **Step 1 + Step 2** (this entry) include
+  the four reference files, the audit template, the static lint, the
+  mutation test suite, the CI wiring, and the three agent-prompt
+  protection blocks. **Step 6** (orchestrator hooks for automatic
+  per-agent audit and anti-fake-audit guard wiring) and **Step 8**
+  (synthetic evaluation case demonstrating all 18 patterns triggered +
+  protected) ship in a follow-up PR. Step 6 is cross-agent runtime work
+  that warrants its own design discussion and is intentionally decoupled
+  from this prompt-and-lint PR.
+- Codex review history: seven rounds of `gpt-5.5` + `xhigh` cross-model
+  review reached SHIP-OK with zero P1 + P2 findings. R1 closed ten
+  Step-1 findings; R2 closed four cascade gaps plus the per-Check
+  `allow_prohibition` leak; R3 closed three P2 findings (span-restricted
+  exemption, token→regex with imperative anchoring, `except/unless/
+  save when` weakeners); R4 closed three P2 findings (modal verb scope
+  expansion, §6 sub-clause coverage, lint→CI wiring); R5 closed one P2
+  plus one P3 (`should/can/permitted` modals and the mutation test
+  suite); R6 closed one P2 (`will/would/ought to/ideally/preferably/
+  We-recommend-that` weakeners) and explicitly deferred orchestrator
+  runtime hooks to the Step 6 follow-up PR. R7 surfaced only one P3
+  add-counter signal (`try to / generally / where relevant` weakeners),
+  which is non-blocking polish.
+- ARS pipeline ship-quality target updates from "each agent produces a
+  clean v1" to "end-to-end deliverable set passes independent xhigh
+  cross-model audit at 0 P1 + P2 finding within three rounds" (per spec
+  §10).
+
+## [3.6.5.2] - 2026-04-27
+
+### Changed
+
+- **`docs/SETUP.md` Method 4 (claude.ai) recommendation revised**. Method 4b
+  (Project + GitHub integration) is now presented first as the recommended
+  claude.ai path, since it brings the repository into Project knowledge for
+  reading and citation without losing fidelity. Method 4a (Custom Skill upload)
+  is now explicitly marked as **not recommended for this suite**, with a
+  rationale paragraph covering two compounding reasons:
+  - ARS depends on Claude Code-only orchestration features. Each skill drives
+    12-13 specialised agents through Claude Code's Task / subagent tooling
+    and Material Passport file handoffs that resume across sessions.
+    claude.ai Custom Skills do support multi-file packages with `scripts/`
+    and code execution per Anthropic's documentation, but the Anthropic-
+    documented scope of the claude.ai Custom Skill runtime does not include
+    Claude Code's Task / subagent control surface or cross-session Material
+    Passport handoffs. The recommendation is forward-looking based on those
+    documented assumptions; we have not run a live upload to characterise
+    the actual surfacing in claude.ai.
+  - Trimming the four `description` fields below claude.ai's 200-character cap
+    would weaken Claude Code and Cowork routing on the platforms the suite was
+    actually built for. The Agent Skills specification and Claude Code Skills
+    documentation both allow up to 1,024 characters; only claude.ai's upload
+    UI enforces 200. Trading Claude Code and Cowork routing precision for
+    partial functionality on the limited claude.ai path was judged not worth
+    it.
+- **Method 4a install commands kept in place** for users who decide to try it
+  anyway, framed as "if you want to try this path despite the limitations"
+  rather than as a recommended flow. The upload UI's expected rejection on
+  description-too-long is documented as deliberate, not an oversight to fix
+  later.
+- **`docs/SETUP.zh-TW.md`** mirrors the English changes end-to-end.
+
+### Notes
+
+- Doc-only patch. No `SKILL.md` (frontmatter or body), no agent file, no
+  schema, no script, no test, no workflow, and no version bump in any skill
+  changed in this patch. The four current `description` fields stay at their
+  Claude Code-native lengths (440-842 characters) so routing on Claude Code
+  and Cowork remains intact.
+- This patch is a scope change from the v3.6.5.2 originally forecast in the
+  v3.6.5.1 SETUP doc. The earlier plan was a description trim; on review, the
+  trim direction was abandoned because it would have damaged Claude Code and
+  Cowork routing to unblock a path that delivers an untested partial fit
+  anyway. The v3.6.5.1 SETUP text's forward-promise of a description trim is
+  removed here.
+- Issue [#44](https://github.com/Imbad0202/academic-research-skills/issues/44)
+  receives a single consolidated reply on this PR's merge, summarising both
+  v3.6.5.1 (SETUP doc rewrite) and v3.6.5.2 (Method 4a recommendation), and
+  closes there.
+
+## [3.6.5.1] - 2026-04-27
+
+### Fixed
+
+- **`docs/SETUP.md` Method 3 install paths** — Option A (symlink) and Option B (copy)
+  now install each of the four skill folders separately into `~/.claude/skills/<skill-name>/`,
+  matching the `<install-root>/<skill-name>/SKILL.md` discovery convention. The previous
+  text installed the whole repo under `~/.claude/skills/academic-research-skills/`, which
+  buried the four `SKILL.md` files one level too deep for Cowork / Claude Code discovery.
+- **`docs/SETUP.md` Method 4 (claude.ai) restructured** — split into Method 4a
+  (Custom Skill upload via Settings → Capabilities → Skills, the standard claude.ai Skill
+  install path) and Method 4b (Project + GitHub integration, fallback knowledge mode and
+  not a Skill install). The previous text framed GitHub integration as a Skill install
+  path, which conflated content retrieval with skill execution. Method 4a documents the
+  current 200-character `description` cap blocker (this entry originally forecast a
+  description trim in v3.6.5.2; see the v3.6.5.2 entry above for the actual decision —
+  Method 4a is documented as not recommended for this suite, and descriptions remain at
+  their Claude Code-native lengths).
+- **Method 3 prerequisites** — expanded from one sentence to a full prerequisites
+  subsection covering Claude Desktop version, internet connectivity, Cowork process model,
+  folder permissions, paid plan, and Team/Enterprise org-admin controls.
+- **Method 4 prerequisites** — split per sub-method. 4a documents zip structure +
+  description cap surfacing as upload-time errors; 4b documents GitHub authentication via
+  the Anthropic connector, private-repo App authorization, and Team/Enterprise owner-level
+  connector enablement.
+- **Cowork UI terminology** — replaced "Cowork tab" / "working directory" with current
+  Cowork UI labels: mode selector (Chat / Cowork), Tasks view, "Use an existing folder"
+  in the left navigation panel, and Cowork Project as the canonical term.
+- **Skill invocation framing** — clarified that Claude uses each skill's `description`
+  for relevance routing rather than literal trigger-phrase matching, and documented the
+  Cowork `/` command palette and `+` capability picker as explicit invocation surfaces.
+- **Method 4 directory table** — added the `scripts/` row (required for Material Passport
+  `literature_corpus[]` adapters and schema validators) and refreshed the project-capacity
+  guidance against current Anthropic Project file limits (per-file 30 MB; file count is
+  not artificially capped at 200).
+- **`docs/SETUP.zh-TW.md`** — mirrored the English rewrite end-to-end so Traditional
+  Chinese readers see the same structure and content for Methods 1-4.
+- **`QUICKSTART.md` Step 1** — install commands aligned with the new Method 3 four-symlink
+  approach.
+
+### Notes
+
+- Doc-only patch. No skill content (`SKILL.md`), no agent file, no schema, no script,
+  and no test changed in this patch.
+- Issue [#44](https://github.com/Imbad0202/academic-research-skills/issues/44) (philpav)
+  reports SETUP problems on Cowork and claude.ai. v3.6.5.1 fixes the SETUP doc;
+  this entry originally forecast a `SKILL.md` description-length fix in v3.6.5.2,
+  but v3.6.5.2 instead documents Method 4a as not recommended for this suite (see
+  the v3.6.5.2 entry above for the actual decision). Issue #44 receives a single
+  consolidated reply and closes on v3.6.5.2 ship.
+
+## [3.6.5] - 2026-04-27
+
+### Added
+
+- Material Passport `literature_corpus[]` consumer integration in Phase 1
+  (deep-research/bibliography_agent + academic-paper/literature_strategist_agent).
+  Corpus-first, search-fills-gap flow with PRE-SCREENED reproducibility block.
+  Reproducibility for systematic-review use is preserved through Iron Rule 1
+  same-criteria parity plus Step 2 case C (standard external search runs even
+  when corpus fully covers RQ subtopics).
+- `academic-pipeline/references/literature_corpus_consumers.md` — consumer protocol
+  reference with four Iron Rules (Same criteria / No silent skip / No corpus mutation /
+  Graceful fallback on parse failure) and per-consumer reading instructions.
+- `scripts/check_corpus_consumer_protocol.py` — CI lint enforcing nine protocol invariants
+  with manifest-driven consumer list and stub-block opt-out.
+- `scripts/corpus_consumer_manifest.json` — supported-consumer manifest.
+
+### Changed
+
+- `shared/handoff_schemas.md` Schema 9 — retired the v3.6.4 "Consumer-side integration
+  deferred to v3.6.5+" caveat; replaced with backpointer to the consumer protocol.
+- `deep-research/SKILL.md` 2.9.1 → 2.9.2 — bibliography_agent corpus-first flow (also
+  syncs Version Info footer that lagged at 2.9.0).
+- `academic-paper/SKILL.md` 3.1.0 → 3.1.1 — literature_strategist_agent corpus-first flow.
+- `academic-pipeline/SKILL.md` 3.6.4 → 3.6.5 — suite version invariant.
+- `.claude/CLAUDE.md`, `MODE_REGISTRY.md`, `README.md`, `README.zh-TW.md`,
+  `scripts/check_spec_consistency.py` updated for the version bump (suite version,
+  badge, tag, changelog heading).
+
+### Notes
+
+- Consumer integration is presence-based: auto-engages when passport carries a
+  non-empty `literature_corpus[]` and parses cleanly. Parse failures fall back
+  to external-DB-only flow with a `[CORPUS PARSE FAILURE]` surface. No new env
+  flag introduced.
+- Schema is unchanged from v3.6.4. Existing user adapters work without modification.
+- `citation_compliance_agent` corpus integration deferred to v3.6.6+.
+- `source_pointer` is not dereferenced by consumers; URI resolution remains a future
+  `source_verification_agent` concern.
+
 ## [3.6.4] - 2026-04-25
 
 ### Added

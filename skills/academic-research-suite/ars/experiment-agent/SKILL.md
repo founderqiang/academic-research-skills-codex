@@ -7,6 +7,8 @@ metadata:
   author: "Cheng-I Wu"
   license: "CC-BY-NC 4.0"
   status: active
+  data_access_level: raw
+  task_type: open-ended
   related_skills:
     - academic-pipeline
     - deep-research
