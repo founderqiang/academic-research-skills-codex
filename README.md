@@ -360,5 +360,12 @@ distribution.
 **Codex** - Assisted with the Codex adapter packaging, router-policy hardening,
 test fixes, and release-readiness review under maintainer direction.
 
+**[vinschger](https://github.com/vinschger)** - Reported beginner installation
+friction around `python` vs `python3`, which led to clearer setup instructions
+for macOS and other environments.
+
+**[Joker2377](https://github.com/Joker2377)** - Helped answer community
+installation questions and clarify beginner setup steps in issue discussions.
+
 Vendored upstream ARS contributors are acknowledged in
 [`skills/academic-research-suite/ars/README.md`](skills/academic-research-suite/ars/README.md#contributors).

@@ -7,6 +7,8 @@ All notable changes to the Codex package are documented here.
 ### Changed
 - Clarified beginner install instructions by using `python3` in command
   examples and documenting the `python` fallback when it points to Python 3.
+- Added community acknowledgements for beginner-install feedback and issue
+  discussion support.
 
 ## [0.1.8] - 2026-05-19
 
