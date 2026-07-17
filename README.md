@@ -1,6 +1,6 @@
 # Academic Research Skills for Codex
 
-[![Version](https://img.shields.io/badge/version-v0.1.18-blue)](VERSION)
+[![Version](https://img.shields.io/badge/version-v0.1.19-blue)](VERSION)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Sponsor](https://img.shields.io/badge/sponsor-Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/crucify020v)
 
@@ -49,7 +49,7 @@ Use this repo when you want the Codex-native single-suite skill.
 
 ## Versioning
 
-This Codex package is version `0.1.18`. The repo-root `VERSION` file,
+This Codex package is version `0.1.19`. The repo-root `VERSION` file,
 `skills/academic-research-suite/SKILL.md` metadata version, and
 `skills/academic-research-suite/manifest.json` `adapter_version` track the
 Codex package version independently of the vendored ARS suite. Vendored upstream
@@ -58,12 +58,12 @@ versions are recorded by commit in `manifest.source_repositories[]`.
 Package-level changes are summarized in [`CHANGELOG.md`](CHANGELOG.md).
 
 The vendored ARS source currently tracks
-`Imbad0202/academic-research-skills@73c898c842afae3f163ac571dfa098c72d7c82af`
-(`v3.16.0`). Vendored runtime content includes ARS v3.16 model tiering,
-risk-stratified cross-model verification and blind disagreement checkpoints,
-GPT-5.6 Sol provisional verifier support, API retrieval hardening, Korean
-routing triggers, CARS introduction/title guidance, and the WP advisory
-held-out evaluation updates.
+`Imbad0202/academic-research-skills@039d94f670c47d996ca919d37b8753b0a8d4a140`
+(`v3.17.0`). Vendored runtime content includes the canonical cross-model
+handoff envelope and dispatcher contract, least-privilege agent tool
+allowlists, an executable panel-synthesis checker, pinned Stage 5/6 boundary
+semantics, a machine-readable degradation registry, and hermetic citation-gate
+transport fixtures.
 Nested upstream `.github/` workflows and root `agents/` mirrors are preserved
 for traceability and self-tests, but are not repo-level CI or Codex entrypoints;
 Claude/plugin loader files under `.claude/` and `.claude-plugin/` remain
@@ -315,15 +315,22 @@ ARS was originally written for Claude Code. In this Codex package:
   upstream judgment/execution classification but applies `economy` or
   `quality-boost` only when the runtime supports an explicit per-dispatch model
   override; otherwise it reports a no-op and keeps the active model.
+- Protected top-level agent `tools:` allowlists remain least-privilege role
+  boundaries. A dispatched checkpoint owner does not gain Bash or network
+  transport; the dispatching Codex context owns any explicitly consented
+  cross-model call.
+- A `[CROSS-MODEL-HANDOFF v1]` block is a transport request, not a deliverable.
+  The dispatcher validates it, sends only its payload, applies the mechanical
+  result routing, and returns judgment work to the original owner.
 - Upstream references to a "fresh Claude Code session" mean a new Codex
   conversation in this package; Material Passport reset semantics still apply.
 - If a citation, source, statistic, or journal policy cannot be verified, Codex
   should mark it as unverified rather than invent support.
 
-### ARS v3.16 Release Parity
+### ARS v3.17 Release Parity
 
 This package aims for the same user-facing workflow content as upstream ARS
-`v3.16.0` where Codex has an equivalent concept.
+`v3.17.0` where Codex has an equivalent concept.
 
 | Upstream ARS feature | Codex package behavior |
 |---|---|
@@ -334,6 +341,9 @@ This package aims for the same user-facing workflow content as upstream ARS
 | Optional Codex full-runtime profile | Planner, agent-team templates, and hook pack live under `skills/academic-research-suite/codex/`; disabled by default |
 | `model: opus` / `model: sonnet` command routing | Treated as Claude metadata; Codex uses the active model |
 | `ARS_MODEL_TIERING=economy\|quality-boost` | Classification is preserved; routing remains advisory unless Codex exposes per-dispatch model selection |
+| Protected agent `tools:` allowlists | Preserved as least-privilege role boundaries; dispatched owners do not receive Bash/network transport |
+| Canonical cross-model handoff envelope | Dispatcher validates the envelope, transports only the payload after consent, and follows the closed result-routing contract |
+| Executable panel/degradation/pipeline-boundary checks | Vendored with their hermetic tests and exposed by the optional full-runtime manifest |
 | SessionStart and SubagentStop hooks | Vendored for traceability only; Codex does not install or execute Claude hooks |
 | Plugin marketplace update / auto-update | Not available here; update by reinstalling or pulling this Codex repo |
 | Claude Code Agent Team | Not automatic; Codex subagents require an explicit user request for delegation or parallel agents |

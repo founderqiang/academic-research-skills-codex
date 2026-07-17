@@ -4,6 +4,27 @@ All notable changes to the Codex package are documented here.
 
 ## Unreleased
 
+## [0.1.19] - 2026-07-17
+
+### What's Changed
+- Updated the vendored ARS runtime from
+  `73c898c842afae3f163ac571dfa098c72d7c82af` (`v3.16.0`) to
+  `039d94f670c47d996ca919d37b8753b0a8d4a140` (`v3.17.0`).
+- Added the canonical cross-model handoff envelope and dispatcher contract,
+  least-privilege tools allowlists, executable panel-synthesis validation,
+  pinned Stage 5/6 boundary semantics, the machine-readable degradation
+  registry, and hermetic citation-gate transport fixtures.
+- Mapped dispatched cross-model transport to the Codex dispatching context,
+  preserved explicit provider/content/consent gates, and exposed the new
+  upstream validators in the optional full-runtime manifest.
+- Preserved the single-root-skill layout, `WORKFLOW.md` entrypoint renaming,
+  nested-distribution validator patches, macOS/Python compatibility patches,
+  and the materialized Codex Desktop plugin bundle. The pipeline-orchestrator
+  content-lock hash changes only for the Codex `WORKFLOW.md` path overlay.
+
+### Notes
+- This sync pins the exact ARS release tag `v3.17.0`.
+
 ## [0.1.18] - 2026-07-13
 
 ### What's Changed
