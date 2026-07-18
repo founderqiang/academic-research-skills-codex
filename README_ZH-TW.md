@@ -1,6 +1,6 @@
 # Academic Research Skills for Codex
 
-[![Version](https://img.shields.io/badge/version-v0.1.19-blue)](VERSION)
+[![Version](https://img.shields.io/badge/version-v0.1.20-blue)](VERSION)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Sponsor](https://img.shields.io/badge/sponsor-Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/crucify020v)
 
@@ -42,7 +42,7 @@ skills/academic-research-suite/
 
 ## 版本控制
 
-此 Codex 套件版本為 `0.1.19`。倉庫根目錄的 `VERSION` 檔案、
+此 Codex 套件版本為 `0.1.20`。倉庫根目錄的 `VERSION` 檔案、
 `skills/academic-research-suite/SKILL.md` 的 metadata 版本，
 以及 `skills/academic-research-suite/manifest.json` 的 `adapter_version`
 獨立追蹤 Codex 套件版本，與內嵌的 ARS 套件版本分開管理。
@@ -51,11 +51,11 @@ skills/academic-research-suite/
 套件層級的變更摘要記錄在 [`CHANGELOG.md`](CHANGELOG.md) 中。
 
 目前內嵌的 ARS 原始碼追蹤至
-`Imbad0202/academic-research-skills@039d94f670c47d996ca919d37b8753b0a8d4a140`
-（`v3.17.0`）。內嵌的執行時期內容包含 canonical cross-model handoff
-envelope 與 dispatcher contract、最小權限 agent tools allowlist、可執行的
-panel-synthesis checker、鎖定的 Stage 5/6 邊界語意、機器可讀的 degradation
-registry，以及 hermetic citation-gate transport fixtures。
+`Imbad0202/academic-research-skills@bbc0659272a511b422f6856cd6f44b6ccb2ac213`
+（`v3.18.0`）。內嵌內容新增固定席次的 cross-model Reviewer 2 與 re-review
+Judge Record、引用快取過期提醒及選用的即時重驗、高影響主張優先抽樣、
+scope-conformance 與 search-bounded novelty advisory，以及 held-out pipeline
+robustness 測試集；v3.17 的 dispatcher、最小權限與完整性檢核契約仍完整保留。
 
 ## 安裝與更新
 
@@ -251,9 +251,9 @@ ARS 最初是為 Claude Code 撰寫的。在此 Codex 套件中：
 - 如果引用、來源、統計數據或期刊政策無法驗證，Codex 應將其標記為未驗證，
   而非虛構支持內容。
 
-### ARS v3.17 Release 功能對等
+### ARS v3.18 Release 功能對等
 
-本套件旨在與上游 ARS `v3.17.0` 在 Codex 具有對等概念之處，
+本套件旨在與上游 ARS `v3.18.0` 在 Codex 具有對等概念之處，
 提供相同的使用者面向 workflow 內容。
 
 | 上游 ARS 功能 | Codex 套件行為 |
@@ -266,8 +266,11 @@ ARS 最初是為 Claude Code 撰寫的。在此 Codex 套件中：
 | `ARS_MODEL_TIERING=economy\|quality-boost` | 保留 judgment/execution 分類；僅在 Codex 支援逐次 dispatch 指定模型時套用，否則維持當前模型 |
 | 受保護 agent 的 `tools:` allowlist | 保留為最小權限角色邊界；被委派的 owner 不取得 Bash 或網路 transport |
 | Canonical cross-model handoff envelope | Dispatcher 驗證 envelope、取得同意後只傳送 payload，並依封閉的結果路由 contract 執行 |
+| Cross-model Reviewer 2 與 re-review judge | 僅在 provider 已設定且取得內容傳輸同意時啟用；保留固定席次、Judge Record、單一模型家族與 fallback 揭露 |
+| 快取過期 advisory 與即時重驗 | 預設使用本地快取；過期列僅為 advisory，`ARS_CACHE_REVALIDATE=1` 才啟用即時書目重驗 |
+| 風險分層主張、範圍與新穎性檢查 | 保留高影響主張優先抽樣，以及不阻擋 gate 的 scope 與 search-bounded novelty advisory |
 | Panel／degradation／pipeline-boundary 可執行檢查 | 與 hermetic 測試一併內嵌，並由選用的 full-runtime manifest 公開 |
-| SessionStart 和 SubagentStop hooks | 僅為可追溯性而保留；Codex 不安裝或執行 Claude hooks |
+| SessionStart 和 SubagentStop hooks（含更新提醒） | 僅為可追溯性而保留；Codex 不安裝或執行 Claude hooks |
 | Plugin marketplace 更新/自動更新 | 此處不提供；透過重新安裝或拉取本 Codex repo 來更新 |
 | Claude Code Agent Team | 非自動；Codex 子 agent 需要使用者明確要求委派或平行 agent |
 | 上游文件中的跨模型 provider 分派 | 預設停用；只有在明確設定 provider 並取得使用者同意時才可使用 |

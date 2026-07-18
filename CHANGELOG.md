@@ -4,6 +4,29 @@ All notable changes to the Codex package are documented here.
 
 ## Unreleased
 
+## [0.1.20] - 2026-07-18
+
+### What's Changed
+- Updated the vendored ARS runtime from
+  `039d94f670c47d996ca919d37b8753b0a8d4a140` (`v3.17.0`) to
+  `bbc0659272a511b422f6856cd6f44b6ccb2ac213` (`v3.18.0`).
+- Added the fixed-seat cross-model Reviewer 2 track, independent re-review
+  judge pass and Judge Record, cache-age advisories with opt-in live
+  re-validation, high-impact-first claim sampling, scope-conformance and
+  search-bounded novelty advisories, and the held-out pipeline robustness set.
+- Preserved Codex provider/content/consent boundaries: external reviewer and
+  judge tracks are never simulated, single-family or fallback execution is
+  disclosed, and live cache re-validation stays tied to explicit verification
+  work.
+- Vendored the upstream SessionStart update checker for traceability and tests
+  without installing it as a Codex hook. Preserved the single-root-skill
+  layout, `WORKFLOW.md` entrypoint mapping, nested-distribution validator
+  patches, macOS/Python compatibility patches, and the materialized Desktop
+  plugin bundle.
+
+### Notes
+- This sync pins the exact ARS release tag `v3.18.0`.
+
 ## [0.1.19] - 2026-07-17
 
 ### What's Changed

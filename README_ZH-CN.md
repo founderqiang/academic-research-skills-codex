@@ -1,6 +1,6 @@
 # Academic Research Skills for Codex
 
-[![Version](https://img.shields.io/badge/version-v0.1.19-blue)](VERSION)
+[![Version](https://img.shields.io/badge/version-v0.1.20-blue)](VERSION)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Sponsor](https://img.shields.io/badge/sponsor-Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/crucify020v)
 
@@ -40,16 +40,16 @@ skills/academic-research-suite/
 
 ## 版本管理
 
-本 Codex 打包版本为 `0.1.19`。repo 根目录的 `VERSION` 文件、`skills/academic-research-suite/SKILL.md` 中的元数据版本，以及 `skills/academic-research-suite/manifest.json` 中的 `adapter_version` 独立追踪 Codex 打包版本，与内嵌的 ARS 套件版本无关。内嵌的上游版本通过 commit 记录在 `manifest.source_repositories[]` 中。
+本 Codex 打包版本为 `0.1.20`。repo 根目录的 `VERSION` 文件、`skills/academic-research-suite/SKILL.md` 中的元数据版本，以及 `skills/academic-research-suite/manifest.json` 中的 `adapter_version` 独立追踪 Codex 打包版本，与内嵌的 ARS 套件版本无关。内嵌的上游版本通过 commit 记录在 `manifest.source_repositories[]` 中。
 
 打包层面的变更汇总在 [`CHANGELOG.md`](CHANGELOG.md) 中。
 
 当前内嵌的 ARS 源码追踪至
-`Imbad0202/academic-research-skills@039d94f670c47d996ca919d37b8753b0a8d4a140`
-（`v3.17.0`）。内嵌的运行时内容包含 canonical cross-model handoff
-envelope 与 dispatcher contract、最小权限 agent tools allowlist、可执行的
-panel-synthesis checker、锁定的 Stage 5/6 边界语义、机器可读的 degradation
-registry，以及 hermetic citation-gate transport fixtures。
+`Imbad0202/academic-research-skills@bbc0659272a511b422f6856cd6f44b6ccb2ac213`
+（`v3.18.0`）。内嵌内容新增固定席位的 cross-model Reviewer 2 与 re-review
+Judge Record、引用缓存陈旧提醒及可选实时重验、高影响主张优先抽样、
+scope-conformance 与 search-bounded novelty advisory，以及 held-out pipeline
+robustness 测试集；v3.17 的 dispatcher、最小权限与完整性检查契约仍完整保留。
 
 ## 安装或更新
 
@@ -224,9 +224,9 @@ ARS 最初是为 Claude Code 编写的。在本 Codex 打包版本中：
 - 上游对"新 Claude Code 会话"的引用在本包中等同于新的 Codex 对话；Material Passport 重置语义仍然适用。
 - 如果引用、来源、统计数据或期刊政策无法验证，Codex 应将其标记为未验证，而非编造支撑依据。
 
-### ARS v3.17 Release 功能对等
+### ARS v3.18 Release 功能对等
 
-本包旨在 Codex 具有等效概念的地方，提供与上游 ARS `v3.17.0` 相同的用户侧 workflow 内容。
+本包旨在 Codex 具有等效概念的地方，提供与上游 ARS `v3.18.0` 相同的用户侧 workflow 内容。
 
 | 上游 ARS 功能 | Codex 打包版本行为 |
 |---|---|
@@ -238,8 +238,11 @@ ARS 最初是为 Claude Code 编写的。在本 Codex 打包版本中：
 | `ARS_MODEL_TIERING=economy\|quality-boost` | 保留 judgment/execution 分类；仅在 Codex 支持逐次 dispatch 指定模型时应用，否则保持当前模型 |
 | 受保护 agent 的 `tools:` allowlist | 保留为最小权限角色边界；被委派的 owner 不获得 Bash 或网络 transport |
 | Canonical cross-model handoff envelope | Dispatcher 验证 envelope、取得同意后仅传输 payload，并遵循封闭的结果路由 contract |
+| Cross-model Reviewer 2 与 re-review judge | 仅在 provider 已配置且取得内容传输同意时启用；保留固定席位、Judge Record、单一模型族与 fallback 披露 |
+| 缓存陈旧 advisory 与实时重验 | 默认使用本地缓存；陈旧行仅为 advisory，`ARS_CACHE_REVALIDATE=1` 才启用实时书目重验 |
+| 风险分层主张、范围与新颖性检查 | 保留高影响主张优先抽样，以及不阻断 gate 的 scope 与 search-bounded novelty advisory |
 | Panel／degradation／pipeline-boundary 可执行检查 | 连同 hermetic 测试一起内嵌，并由可选 full-runtime manifest 暴露 |
-| SessionStart 和 SubagentStop hook | 仅为可追溯性而内嵌保留；Codex 不安装或执行 Claude hook |
+| SessionStart 和 SubagentStop hook（含更新提醒） | 仅为可追溯性而内嵌保留；Codex 不安装或执行 Claude hook |
 | Plugin 市场更新 / 自动更新 | 此处不可用；通过重新安装或拉取此 Codex repo 进行更新 |
 | Claude Code Agent Team | 非自动；Codex 子 agent 需要用户明确请求委派或并行 agent |
 | 上游文档中的跨模型 provider 调度 | 默认禁用；仅在明确配置 provider 并取得用户同意时可用 |
