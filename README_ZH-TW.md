@@ -1,6 +1,6 @@
 # ARS-Codex
 
-[![Version](https://img.shields.io/badge/version-v3.22.0-blue)](VERSION)
+[![Version](https://img.shields.io/badge/version-v3.22.2-blue)](VERSION)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Sponsor](https://img.shields.io/badge/sponsor-Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/crucify020v)
 
@@ -29,7 +29,7 @@ skills/academic-research-suite/
     shared/
 ```
 
-原始 Claude Code ARS 的 checkout 不會被修改。上游內容從全新的 GitHub clone 複製，
+原始 Claude Code ARS 的 checkout 不會被修改。上游內容從已核對的上游發行 commit 複製，
 並透過 `skills/academic-research-suite/SKILL.md` 中的 Codex router 進行適配。
 
 ## 與 Claude Code ARS 的關係
@@ -43,7 +43,7 @@ skills/academic-research-suite/
 
 ## 版本控制
 
-此 ARS-Codex 套件版本為 `3.22.0`。倉庫根目錄的 `VERSION` 檔案、
+此 ARS-Codex 套件版本為 `3.22.2`。倉庫根目錄的 `VERSION` 檔案、
 `skills/academic-research-suite/SKILL.md` 的 metadata 版本，
 以及 `skills/academic-research-suite/manifest.json` 的 `adapter_version`
 自 `3.22.0` 起與內嵌 ARS 套件使用相同版號；舊有 `0.1.x` 紀錄保留原版號。
@@ -51,12 +51,13 @@ skills/academic-research-suite/
 
 套件層級的變更摘要記錄在 [`CHANGELOG.md`](CHANGELOG.md) 中。
 
-目前內嵌的 ARS 原始碼對齊 **v3.22.0**：
-`Imbad0202/academic-research-skills@3c546bc08c56f79e0068f1ea4f0acedf5bf69b5e`。
-此版本新增輸出語言配對契約、西班牙文意圖路由、審查校準與插件評估素材，
-並修正 Windows 檔案鎖、模型傳輸與稽核來源紀錄。
+目前內嵌的 ARS 原始碼對齊 **v3.22.2**：
+`Imbad0202/academic-research-skills@7de1c9dfb7af9c02a9b57750761323f35a743aa2`。
+此版本納入 v3.22.1 與 v3.22.2 修正：本機 run ledger 與交接檢查、
+確定性的縮寫檢查、擴大指令與資料邊界、明確意圖路由，以及以證據為準的中文 APA 7 引用檢查。
+新工具以合成測試驗證確定性行為；prompt 是否被遵循及 Codex 模型成效尚未實測。
 語言配對目前僅支援 `zh-tw-en`；西班牙文觸發詞不代表已提供西班牙文輸出語系包。
-Claude 插件評估素材保留供參考，不代表已實測 Codex 效能。
+Claude 模型稽核與插件評估素材保留供參考，不會改變 Codex 模型策略，也不代表已實測 Codex 效能。
 
 ## 模型與執行方式
 
@@ -298,10 +299,10 @@ ARS 最初是為 Claude Code 撰寫的。在此 Codex 套件中：
 - 如果引用、來源、統計數據或期刊政策無法驗證，Codex 應將其標記為未驗證，
   而非虛構支持內容。
 
-### ARS v3.22.0 功能對等
+### ARS v3.22.2 功能對等
 
-本套件在 Codex 具有對等概念之處，適配上游 ARS `v3.22.0`
-（`3c546bc08c56f79e0068f1ea4f0acedf5bf69b5e`），並記錄模型與 runtime overlay。
+本套件在 Codex 具有對等概念之處，適配上游 ARS `v3.22.2`
+（`7de1c9dfb7af9c02a9b57750761323f35a743aa2`），並記錄模型與 runtime overlay。
 
 Codex adapter 對書目網路行為採以下明確邊界：
 
@@ -323,6 +324,10 @@ Codex adapter 對書目網路行為採以下明確邊界：
 | `ARS_MODEL_TIERING=economy\|quality-boost` | 保留 judgment/execution 分類；僅在 Codex 支援逐次 dispatch 指定模型時套用，否則維持當前模型 |
 | 受保護 agent 的 `tools:` allowlist | 保留為最小權限角色邊界；被委派的 owner 不取得 Bash 或網路 transport |
 | Canonical cross-model handoff envelope | Dispatcher 驗證 envelope、取得同意後只傳送 payload，並依封閉的結果路由 contract 執行 |
+| Run ledger 與交接檢查 | 有 passport 檔案時，pipeline prompt 指示呼叫端在本機記錄使用者原話、步驟回條與檔案雜湊；確定性報告檢查壓縮、續跑及子 agent 回傳後的交接，不構成新的授權 |
+| 確定性縮寫檢查 | 呼叫端在本機檢查已儲存的草稿與摘要，明示不完整覆蓋；審查附件僅供參考，不作為決定、修訂路線圖或再審標準的依據 |
+| 指令與資料邊界及路由 | Workflow intake、dispatch 與工具讀取的第三方文字均視為資料；明確請求即使缺少輸入仍留在所選模式，Claude 啟動 hooks 維持不啟用 |
+| 中文 APA 7 引用檢查 | 保留作者縮寫例外與參考文獻作者欄，須有筆畫排序顛倒的證據才建議重排，並區分可見語法錯誤與未驗證的來源主張 |
 | 用途受限的 Codex citation transport | 僅在明確設定、要求並取得同意後，用於窄範圍 citation-integrity 檢查 |
 | 證據綁定的 review／revision | 保留持久 evidence row、已確認 criteria、非排序 roadmap、author adjudication 與 revision-evidence bundle |
 | Socratic 研究問題作者權 | 未收斂不會觸發系統代擬候選研究問題；必須由使用者明確要求才能離開 non-generation 模式 |

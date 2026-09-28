@@ -1,6 +1,6 @@
 # ARS-Codex
 
-[![Version](https://img.shields.io/badge/version-v3.22.0-blue)](VERSION)
+[![Version](https://img.shields.io/badge/version-v3.22.2-blue)](VERSION)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Sponsor](https://img.shields.io/badge/sponsor-Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/crucify020v)
 
@@ -37,7 +37,7 @@ skills/academic-research-suite/
 ```
 
 The original Claude Code ARS checkout is not modified. Upstream content is copied
-from fresh GitHub clones and adapted through the Codex router in
+from verified upstream release commits and adapted through the Codex router in
 `skills/academic-research-suite/SKILL.md`.
 
 ## Relationship to Claude Code ARS
@@ -51,7 +51,7 @@ Use this repo when you want the Codex-native single-suite skill.
 
 ## Versioning
 
-This ARS-Codex package is version `3.22.0`. The repo-root `VERSION` file,
+This ARS-Codex package is version `3.22.2`. The repo-root `VERSION` file,
 `skills/academic-research-suite/SKILL.md` metadata version, and
 `skills/academic-research-suite/manifest.json` `adapter_version` track the
 Codex package version in step with the vendored ARS suite, starting at `3.22.0`.
@@ -60,15 +60,17 @@ tag, and commit are recorded in `manifest.source_repositories[]`.
 
 Package-level changes are summarized in [`CHANGELOG.md`](CHANGELOG.md).
 
-The vendored ARS source tracks **v3.22.0** at
-`Imbad0202/academic-research-skills@3c546bc08c56f79e0068f1ea4f0acedf5bf69b5e`.
-This release adds the output-language-pair contract, Spanish intent routing,
-reviewer-calibration and plugin evaluation fixtures, and Windows file-lock
-repairs. It adopts upstream model-transport and audit-provenance fixes while
-preserving the Codex runtime and consent contracts. The output-language-pair
-registry currently supports only `zh-tw-en`; Spanish triggers do not install a
-Spanish output-locale pack. Claude plugin eval suites are reference material,
-not evidence of measured Codex performance.
+The vendored ARS source tracks **v3.22.2** at
+`Imbad0202/academic-research-skills@7de1c9dfb7af9c02a9b57750761323f35a743aa2`.
+This release incorporates the v3.22.1 and v3.22.2 repairs: a local run ledger
+and rendered handoff check, a deterministic advisory acronym check, broader
+instruction/data boundaries, explicit-intent routing fixes, and evidence-bound
+Chinese APA 7 citation checks. Synthetic tests cover the new deterministic
+tools; prompt-following and Codex model effectiveness remain unmeasured.
+The output-language-pair registry still supports only `zh-tw-en`; Spanish
+triggers do not install a Spanish output-locale pack. Claude model audits and
+plugin eval suites are reference material and do not change the Codex model
+policy or establish measured Codex performance.
 Nested upstream `.github/` workflows and root `agents/` mirrors are preserved
 for traceability and self-tests, but are not repo-level CI or Codex entrypoints;
 Claude/plugin loader files under `.claude/` and `.claude-plugin/` remain
@@ -391,10 +393,10 @@ ARS was originally written for Claude Code. In this Codex package:
 - If a citation, source, statistic, or journal policy cannot be verified, Codex
   should mark it as unverified rather than invent support.
 
-### ARS v3.22.0 Parity
+### ARS v3.22.2 Parity
 
-This package adapts upstream ARS `v3.22.0` at
-`3c546bc08c56f79e0068f1ea4f0acedf5bf69b5e` wherever Codex has an equivalent
+This package adapts upstream ARS `v3.22.2` at
+`7de1c9dfb7af9c02a9b57750761323f35a743aa2` wherever Codex has an equivalent
 concept, with documented model/runtime overlays.
 
 Bibliographic network behavior is intentionally explicit at the Codex adapter
@@ -420,6 +422,10 @@ boundary:
 | Protected agent `tools:` allowlists | Preserved as least-privilege role boundaries; dispatched owners do not receive Bash/network transport |
 | Canonical cross-model handoff envelope | Dispatcher validates the envelope, transports only the payload after consent, and follows the closed result-routing contract |
 | Contained Codex citation transport | Opt-in, consent-gated transport is limited to narrow citation-integrity checks; it is inactive unless explicitly configured and requested |
+| Run ledger and handoff check | With a passport file, pipeline prompts direct the caller to keep a local ledger of exact user words, step receipts, and file hashes; deterministic reports check handoffs after compaction, resume, and subagent returns, without establishing new authorization |
+| Deterministic acronym check | The caller checks saved drafts and abstracts locally; partial coverage is explicit, and a review attachment remains advisory and outside decision, roadmap, and re-review criteria |
+| Instruction/data boundary and routing | Third-party text remains data across workflow intake, dispatches, and tool reads; explicit requests stay in their selected mode when inputs are missing, and Claude startup hooks remain inactive |
+| Chinese APA 7 citation checks | Preserve author-abbreviation exceptions and reference-list authors, require evidence before proposing a stroke-order change, and distinguish visible syntax errors from unverified source claims |
 | Evidence-bound review and revision | Durable evidence rows, confirmed review criteria, non-ranking roadmaps, author adjudication, and revision-evidence bundles are preserved |
 | Research-workflow profiles | Default-off deterministic selection with a visible field-general fallback; no research family is inferred from manuscript content, and corrections stale rather than rewrite prior artifacts |
 | Inquiry branch ledger | `ARS_INQUIRY_LEDGER=1` enables the local opt-in alpha; author events, bounded summaries, path/lock/recovery safeguards, and stale causes are preserved without granting network authority |

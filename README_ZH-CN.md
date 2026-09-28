@@ -1,6 +1,6 @@
 # ARS-Codex
 
-[![Version](https://img.shields.io/badge/version-v3.22.0-blue)](VERSION)
+[![Version](https://img.shields.io/badge/version-v3.22.2-blue)](VERSION)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Sponsor](https://img.shields.io/badge/sponsor-Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/crucify020v)
 
@@ -34,7 +34,7 @@ skills/academic-research-suite/
     shared/
 ```
 
-原始的 Claude Code ARS checkout 不会被修改。上游内容从最新的 GitHub clone 中复制，并通过 `skills/academic-research-suite/SKILL.md` 中的 Codex router 进行适配。
+原始的 Claude Code ARS checkout 不会被修改。上游内容从已核对的上游发布 commit 中复制，并通过 `skills/academic-research-suite/SKILL.md` 中的 Codex router 进行适配。
 
 ## 与 Claude Code ARS 的关系
 
@@ -46,16 +46,17 @@ skills/academic-research-suite/
 
 ## 版本管理
 
-本 ARS-Codex 打包版本为 `3.22.0`。repo 根目录的 `VERSION` 文件、`skills/academic-research-suite/SKILL.md` 中的元数据版本，以及 `skills/academic-research-suite/manifest.json` 中的 `adapter_version` 自 `3.22.0` 起与内嵌 ARS 套件使用相同版本号；原有 `0.1.x` 记录保留原版本号。上游版本、tag 和完整 commit 记录在 `manifest.source_repositories[]` 中。
+本 ARS-Codex 打包版本为 `3.22.2`。repo 根目录的 `VERSION` 文件、`skills/academic-research-suite/SKILL.md` 中的元数据版本，以及 `skills/academic-research-suite/manifest.json` 中的 `adapter_version` 自 `3.22.0` 起与内嵌 ARS 套件使用相同版本号；原有 `0.1.x` 记录保留原版本号。上游版本、tag 和完整 commit 记录在 `manifest.source_repositories[]` 中。
 
 打包层面的变更汇总在 [`CHANGELOG.md`](CHANGELOG.md) 中。
 
-当前内嵌的 ARS 源码对齐 **v3.22.0**：
-`Imbad0202/academic-research-skills@3c546bc08c56f79e0068f1ea4f0acedf5bf69b5e`。
-此版本新增输出语言配对契约、西班牙语意图路由、评审校准和插件评估素材，
-并修复 Windows 文件锁、模型传输和审计来源记录。
+当前内嵌的 ARS 源码对齐 **v3.22.2**：
+`Imbad0202/academic-research-skills@7de1c9dfb7af9c02a9b57750761323f35a743aa2`。
+此版本纳入 v3.22.1 和 v3.22.2 修复：本地 run ledger 与交接检查、
+确定性的缩写检查、扩展指令与数据边界、明确意图路由，以及以证据为准的中文 APA 7 引用检查。
+新工具通过合成测试验证确定性行为；prompt 是否被遵循及 Codex 模型成效尚未实测。
 语言配对目前仅支持 `zh-tw-en`；西班牙语触发词不代表已提供西班牙语输出语言包。
-Claude 插件评估素材保留供参考，不代表已实测 Codex 性能。
+Claude 模型审计和插件评估素材保留供参考，不会改变 Codex 模型策略，也不代表已实测 Codex 性能。
 
 上游嵌套的 `.github/` 工作流和根级 `agents/` 镜像保留用于可追溯性和自测，
 但不是仓库级 CI 或 Codex 入口；`.claude/` 与 `.claude-plugin/` 下的
@@ -307,9 +308,9 @@ ARS 最初是为 Claude Code 编写的。在本 Codex 打包版本中：
 - 上游对"新 Claude Code 会话"的引用在本包中等同于新的 Codex 对话；Material Passport 重置语义仍然适用。
 - 如果引用、来源、统计数据或期刊政策无法验证，Codex 应将其标记为未验证，而非编造支撑依据。
 
-### ARS v3.22.0 功能对等
+### ARS v3.22.2 功能对等
 
-本包在 Codex 具有等效概念之处，适配上游 ARS `v3.22.0`（`3c546bc08c56f79e0068f1ea4f0acedf5bf69b5e`），并记录模型与 runtime overlay。
+本包在 Codex 具有等效概念之处，适配上游 ARS `v3.22.2`（`7de1c9dfb7af9c02a9b57750761323f35a743aa2`），并记录模型与 runtime overlay。
 
 | 上游 ARS 功能 | Codex 打包版本行为 |
 |---|---|
@@ -323,6 +324,10 @@ ARS 最初是为 Claude Code 编写的。在本 Codex 打包版本中：
 | 受保护 agent 的 `tools:` allowlist | 保留为最小权限角色边界；被委派的 owner 不获得 Bash 或网络 transport |
 | Canonical cross-model handoff envelope | Dispatcher 验证 envelope、取得同意后仅传输 payload，并遵循封闭的结果路由 contract |
 | 用途受限的 Codex citation transport | 仅在明确配置、请求并取得同意后用于窄范围 citation-integrity 检查 |
+| Run ledger 与交接检查 | 有 passport 文件时，pipeline prompt 指示调用端在本地记录用户原话、步骤回执和文件哈希；确定性报告检查压缩、续跑及子 agent 返回后的交接，不构成新的授权 |
+| 确定性缩写检查 | 调用端在本地检查已保存的草稿和摘要，明确标示不完整覆盖；评审附件仅供参考，不作为决定、修订路线图或复审标准的依据 |
+| 指令与数据边界及路由 | Workflow intake、dispatch 和工具读取的第三方文本均视为数据；明确请求即使缺少输入仍留在所选模式，Claude 启动 hooks 保持不启用 |
+| 中文 APA 7 引用检查 | 保留作者缩写例外和参考文献作者字段，须有笔画排序颠倒的证据才建议重排，并区分可见语法错误与未验证的来源主张 |
 | 证据绑定的 review／revision | 保留持久 evidence row、已确认 criteria、非排序 roadmap、author adjudication 与 revision-evidence bundle |
 | Socratic 研究问题作者权 | 未收敛不会触发系统代拟候选研究问题；必须由用户明确请求才能离开 non-generation 模式 |
 | 类别式审稿判断与 panel provenance | Live package 保持 `NOT_CALIBRATED`；不虚构数值分数、权重、总分、排名或二元 independence 声明 |

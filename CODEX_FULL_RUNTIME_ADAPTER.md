@@ -72,7 +72,43 @@ python3 skills/academic-research-suite/codex/scripts/ars_codex_full_runtime.py -
   "ars-reviewer full review for this manuscript."
 ```
 
-## ARS v3.22.0 Runtime Boundaries
+## ARS v3.22.2 Runtime Boundaries
+
+The package tracks the ARS v3.22.2 tag at
+`7de1c9dfb7af9c02a9b57750761323f35a743aa2`, including the v3.22.1 repairs.
+The run ledger and acronym checker have deterministic synthetic tests;
+whether a model follows the caller instructions remains unmeasured. Upstream
+Claude audits and routing/evaluation runs do not measure Codex effectiveness
+or change the Codex model policy. Claude startup hooks remain inactive.
+
+- With a passport file, pipeline prompts instruct the caller to use
+  `ars/scripts/run_ledger.py` to record exact user words, checkpoint exchanges,
+  step receipts, counters, and file hashes locally beside the passport. The
+  ledger contains the user's original wording; its storage and deletion are
+  documented in `ars/docs/DATA_FLOWS.md`. After compaction, resume, and subagent
+  returns, `report --render en` or `--render zh-TW` supplies the handoff check
+  verbatim when it has findings. Append computes named input hashes and report
+  rechecks them; missing or changed inputs cannot back a completed step.
+  A missing or unreadable ledger backs nothing, and a broken hash chain backs
+  nothing from the break onward. The chain detects accidental damage, not
+  deliberate edits, a lost tail, or rollback. Skill deliverable ownership and
+  ledger entries do not independently establish or widen user authorization.
+- The dispatching session runs `ars/scripts/check_acronyms.py` locally on saved
+  drafts and abstracts at the workflow's specified points. This read-only check
+  makes no model call and reports partial or unavailable coverage explicitly.
+  A review attachment is added after the decision is final and stays outside
+  decision, roadmap, and re-review criteria; revision fixes stay within the
+  author's authorized targets.
+- The instruction/data boundary covers third-party text in workflow intake,
+  dispatches, passport imports, and receiver tool reads. The opt-in claim-audit
+  prompt version changes with its boundary, preventing old prompt verdicts
+  from being reused. These prompt rules are not measured security guarantees.
+- Explicit requests retain their selected mode when required inputs are
+  missing; literature-review intake does not reopen workflow selection, and
+  journal/conference peer review does not trigger the committee-correspondence
+  variant. Chinese APA 7 citation checks preserve abbreviation exceptions and
+  complete reference authors, require evidence for a stroke-order correction,
+  and distinguish visible syntax errors from unverified source claims.
 
 The Phase-1 output-language-pair contract is carried through paper intake and
 abstract generation into Schema 4. Only `zh-tw-en` is registered; omission

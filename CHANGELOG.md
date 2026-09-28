@@ -4,6 +4,37 @@ All notable changes to the Codex package are documented here.
 
 ## Unreleased
 
+## [3.22.2] - 2026-09-28
+
+### What's Changed
+- Synced the tagged ARS v3.22.2 release at
+  `7de1c9dfb7af9c02a9b57750761323f35a743aa2`, including v3.22.1 repairs,
+  while preserving Codex runtime/path overlays and the separately pinned
+  experiment-agent v1.1.0.
+- Added the local run-ledger schema, CLI, and pipeline instructions for exact
+  user wording, step receipts, file hashes, and rendered English/Traditional
+  Chinese handoff checks after compaction, resume, and subagent returns.
+  Receipt input hashes are computed on append and rechecked on report; ledger
+  contents do not create user authorization, and its hash chain detects
+  accidental damage rather than deliberate edits, rollback, or a lost tail.
+- Added the deterministic, local acronym checker for saved manuscripts and
+  abstracts. Coverage limits remain explicit; review reports are advisory
+  attachments excluded from decisions, revision roadmaps, and re-review criteria.
+- Adopted the broader instruction/data boundary across intake, dispatches,
+  passport imports, and tool reads. The changed opt-in claim-audit judge prompt
+  partitions cache entries from older prompt versions.
+- Carried forward routing fixes that keep explicit requests in their selected
+  mode when inputs are missing, retain literature review within its chosen
+  workflow, and distinguish peer review from committee correspondence.
+- Adopted Chinese APA 7 citation-check repairs: preserve abbreviation
+  exceptions and reference-list authors, require evidence of stroke-order
+  inversion, and separate visible syntax errors from unverified source claims.
+- Updated four-language release guidance and the materialized Desktop bundle.
+  Upstream Claude model audits, routing smoke results, and plugin evaluation
+  fixtures remain reference evidence; they do not establish Codex model
+  effectiveness. Claude plugin hooks remain inactive, and prompt adherence is
+  unmeasured.
+
 ## [3.22.0] - 2026-09-16
 
 ### What's Changed

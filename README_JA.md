@@ -1,6 +1,6 @@
 # ARS-Codex
 
-[![Version](https://img.shields.io/badge/version-v3.22.0-blue)](VERSION)
+[![Version](https://img.shields.io/badge/version-v3.22.2-blue)](VERSION)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Sponsor](https://img.shields.io/badge/sponsor-Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/crucify020v)
 
@@ -26,7 +26,7 @@ skills/academic-research-suite/
     shared/
 ```
 
-元の Claude Code ARS チェックアウトは変更されません。アップストリームの内容は GitHub の新規クローンからコピーされ、`skills/academic-research-suite/SKILL.md` の Codex ルータを通じて適合されます。
+元の Claude Code ARS チェックアウトは変更されません。アップストリームの内容は検証済みのリリースコミットからコピーされ、`skills/academic-research-suite/SKILL.md` の Codex ルータを通じて適合されます。
 
 ## Claude Code ARS との関係
 
@@ -36,11 +36,11 @@ Claude Code ネイティブのスキルレイアウト、Claude 固有の agent-
 
 ## バージョニング
 
-この ARS-Codex パッケージのバージョンは `3.22.0` です。リポジトリルートの `VERSION` ファイル、`skills/academic-research-suite/SKILL.md` のメタデータバージョン、および `skills/academic-research-suite/manifest.json` の `adapter_version` は、`3.22.0` から内包する ARS スイートと同じバージョン番号を使います。過去の `0.1.x` 番号は履歴として保持します。上流のバージョン、tag、完全な commit は `manifest.source_repositories[]` に記録します。
+この ARS-Codex パッケージのバージョンは `3.22.2` です。リポジトリルートの `VERSION` ファイル、`skills/academic-research-suite/SKILL.md` のメタデータバージョン、および `skills/academic-research-suite/manifest.json` の `adapter_version` は、`3.22.0` から内包する ARS スイートと同じバージョン番号を使います。過去の `0.1.x` 番号は履歴として保持します。上流のバージョン、tag、完全な commit は `manifest.source_repositories[]` に記録します。
 
 パッケージレベルの変更内容は [`CHANGELOG.md`](CHANGELOG.md) にまとめられています。
 
-ベンダリングした ARS は **v3.22.0**、`Imbad0202/academic-research-skills@3c546bc08c56f79e0068f1ea4f0acedf5bf69b5e` に揃えています。出力言語ペア契約、スペイン語の意図ルーティング、レビュー校正とプラグイン評価の資料、Windows ファイルロックとモデル転送の修正を取り込みます。言語ペアは現在 `zh-tw-en` のみで、スペイン語のトリガーは出力ロケールパックの提供を意味しません。Claude の評価資料は Codex の性能測定ではありません。
+ベンダリングした ARS は **v3.22.2**、`Imbad0202/academic-research-skills@7de1c9dfb7af9c02a9b57750761323f35a743aa2` に揃えています。v3.22.1 と v3.22.2 のローカル run ledger と引き継ぎ確認、決定的な略語チェック、指示とデータの境界拡張、明示的な意図のルーティング修正、証拠に基づく中国語 APA 7 引用チェックを取り込みます。新しいツールの決定的な動作は合成テストの対象ですが、プロンプトの遵守と Codex モデルの有効性は未測定です。言語ペアは現在 `zh-tw-en` のみで、スペイン語のトリガーは出力ロケールパックの提供を意味しません。Claude のモデル監査と評価資料は参考用であり、Codex のモデル方針を変更せず、Codex の性能測定でもありません。
 
 ## モデルと実行方式
 
@@ -253,9 +253,9 @@ ARS は元々 Claude Code 向けに作成されました。この Codex パッ�
 - アップストリームの「fresh Claude Code session」という記述は、このパッケージでは新しい Codex セッションを意味します。Material Passport のリセットセマンティクスは引き続き適用されます。
 - 引用、ソース、統計、またはジャーナルポリシーが検証できない場合、Codex は根拠を捏生するのではなく、未検証としてマークする必要があります。
 
-### ARS v3.22.0 パリティ
+### ARS v3.22.2 パリティ
 
-このパッケージは、Codex に同等の概念が存在する範囲で、アップストリーム ARS `v3.22.0`（`3c546bc08c56f79e0068f1ea4f0acedf5bf69b5e`）を適合し、モデルと runtime overlay を記録します。
+このパッケージは、Codex に同等の概念が存在する範囲で、アップストリーム ARS `v3.22.2`（`7de1c9dfb7af9c02a9b57750761323f35a743aa2`）を適合し、モデルと runtime overlay を記録します。
 
 | アップストリーム ARS 機能 | Codex パッケージの動作 |
 |---|---|
@@ -267,6 +267,10 @@ ARS は元々 Claude Code 向けに作成されました。この Codex パッ�
 | 保護対象 agent の `tools:` allowlist | 最小権限のロール境界として保持され、委譲された owner に Bash やネットワーク transport は付与されません |
 | Canonical cross-model handoff envelope | Dispatcher が envelope を検証し、同意後は payload のみを送信して、閉じた結果ルーティング contract に従います |
 | 用途を限定した Codex citation transport | 明示的に設定・要求され、同意が得られた場合のみ、狭い citation-integrity チェックに使用されます |
+| Run ledger と引き継ぎ確認 | passport ファイルがある場合、pipeline prompt はユーザーの原文、ステップの実行記録、ファイルハッシュをローカルに記録するよう呼び出し元に指示します。決定的なレポートが圧縮、再開、subagent の返却後の引き継ぎを確認しますが、新しい承認の根拠にはなりません |
+| 決定的な略語チェック | 呼び出し元が保存済みの草稿と要旨をローカルで検査し、部分的な検査範囲を明示します。レビュー添付は助言に限定し、判定、改訂ロードマップ、再レビュー基準の根拠にしません |
+| 指示とデータの境界およびルーティング | Workflow intake、dispatch、ツールで読む第三者の文章をデータとして扱い、明示的な要求は入力不足でも選択したモードに留めます。Claude の起動 hooks は有効化しません |
+| 中国語 APA 7 引用チェック | 著者省略の例外と参考文献の著者欄を保持し、画数順の逆転に証拠がある場合のみ並べ替えを提案します。目に見える構文エラーと未検証の出典主張を区別します |
 | 証拠に結び付いた review／revision | 永続的な evidence row、確認済み criteria、非ランキング roadmap、author adjudication、revision-evidence bundle を保持します |
 | Socratic の研究質問 authorship | 非収束だけでは system-authored candidate RQ を生成せず、non-generation モードからの退出にはユーザーの明示的な要求が必要です |
 | カテゴリ型 reviewer judgement と panel provenance | Live package は `NOT_CALIBRATED` のままとし、数値 score、weight、aggregate、ranking、二値 independence claim を捏造しません |
