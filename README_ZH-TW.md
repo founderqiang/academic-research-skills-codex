@@ -1,6 +1,6 @@
 # ARS-Codex
 
-[![Version](https://img.shields.io/badge/version-v3.22.2-blue)](VERSION)
+[![Version](https://img.shields.io/badge/version-v3.23.0-blue)](VERSION)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Sponsor](https://img.shields.io/badge/sponsor-Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/crucify020v)
 
@@ -21,6 +21,7 @@ skills/academic-research-suite/
     academic-paper/
     academic-paper-reviewer/
     academic-pipeline/
+    sr-screener/
     experiment-agent/
     commands/
     hooks/
@@ -43,7 +44,7 @@ skills/academic-research-suite/
 
 ## 版本控制
 
-此 ARS-Codex 套件版本為 `3.22.2`。倉庫根目錄的 `VERSION` 檔案、
+此 ARS-Codex 套件版本為 `3.23.0`。倉庫根目錄的 `VERSION` 檔案、
 `skills/academic-research-suite/SKILL.md` 的 metadata 版本，
 以及 `skills/academic-research-suite/manifest.json` 的 `adapter_version`
 自 `3.22.0` 起與內嵌 ARS 套件使用相同版號；舊有 `0.1.x` 紀錄保留原版號。
@@ -51,11 +52,14 @@ skills/academic-research-suite/
 
 套件層級的變更摘要記錄在 [`CHANGELOG.md`](CHANGELOG.md) 中。
 
-目前內嵌的 ARS 原始碼對齊 **v3.22.2**：
-`Imbad0202/academic-research-skills@7de1c9dfb7af9c02a9b57750761323f35a743aa2`。
-此版本納入 v3.22.1 與 v3.22.2 修正：本機 run ledger 與交接檢查、
-確定性的縮寫檢查、擴大指令與資料邊界、明確意圖路由，以及以證據為準的中文 APA 7 引用檢查。
-新工具以合成測試驗證確定性行為；prompt 是否被遵循及 Codex 模型成效尚未實測。
+目前內嵌的 ARS 原始碼對齊 **v3.23.0**：
+`Imbad0202/academic-research-skills@6ab4b03bf70a118a1b3ee7f3263ed9f19031061b`。
+此版本新增須明確要求才啟動的 `sr-screener` 文獻篩選 workflow，並修正 pipeline 的
+實驗資料詢問、已確認的全程限制、完整性證據重播、最終輸出檔案選擇與 ledger 讀取。
+外部 Audit Artifact Gate 改為選用；Stage 2.5 與 4.5 的完整性閘門仍保留。
+閱讀產出會標示各來源的方法弱點及其依據；固定時點的回顧形式提示由作者決定。
+上游 `ars-citation-check` 改為繼承 session 模型。確定性工具有合成測試，
+篩選準確率、prompt 是否被遵循及 Codex 模型成效尚未實測。
 語言配對目前僅支援 `zh-tw-en`；西班牙文觸發詞不代表已提供西班牙文輸出語系包。
 Claude 模型稽核與插件評估素材保留供參考，不會改變 Codex 模型策略，也不代表已實測 Codex 效能。
 
@@ -154,7 +158,7 @@ Use $academic-research-suite to help me plan a systematic literature review on
 AI adoption in higher education quality assurance.
 ```
 
-Codex adapter 會將請求路由至以下五個 ARS workflow 之一：
+Codex adapter 會將請求路由至以下六個 ARS workflow 之一：
 
 | Workflow | 適用情境 | 範例提示 |
 |---|---|---|
@@ -162,7 +166,17 @@ Codex adapter 會將請求路由至以下五個 ARS workflow 之一：
 | `academic-paper` | 論文大綱、撰寫、摘要、修改、引用格式、AI 使用聲明 | `Use $academic-research-suite to turn these notes into an IMRaD paper outline and drafting plan.` |
 | `academic-paper-reviewer` | 稿件審閱、模擬同儕審查、編輯決策、重新審查 | `Use $academic-research-suite to review this manuscript and produce a journal-style decision letter.` |
 | `academic-pipeline` | 端到端的研究至論文 workflow，包含誠信閘門、審查、修改與最終檢查 | `Use $academic-research-suite to run an end-to-end research-to-paper pipeline from topic to revised manuscript.` |
+| `sr-screener` | 明確要求的 eligibility 規則、標題／摘要或全文篩選、爭議裁決、稽核與報告 | `Use $academic-research-suite: sr-screener ta-screen these records against my confirmed protocol.` |
 | `experiment-agent` | 程式碼實驗規劃、人類研究方案、統計詮釋、可重現性驗證 | `Use $academic-research-suite to plan a code experiment and define reproducibility checks.` |
+
+`sr-screener` 提供八種模式：`protocol`、`quick`、`pilot`、`ta-screen`、
+`ft-screen`、`adjudicate`、`audit`、`report`。只有明確要求才啟動篩選，
+`deep-research` 的 `systematic-review` 不會自動轉交。研究團隊須確認納入／排除
+規則並核實 AI 決定；完整標題／摘要篩選前，pilot 必須與團隊標記比對，
+且不得漏掉團隊選擇晉級的紀錄，除非使用者留下 override 紀錄。
+兩位 reviewer 共同排除的紀錄須以可重現抽樣送資深 reviewer 做 QC
+（至少 20 筆、預設 100 筆；不足時全數複查），完成前的數量均為暫定。
+缺少或格式錯誤的決定維持 pending；腳本有合成測試，篩選準確率尚未實測。
 
 ### Claude 風格別名
 
@@ -299,10 +313,10 @@ ARS 最初是為 Claude Code 撰寫的。在此 Codex 套件中：
 - 如果引用、來源、統計數據或期刊政策無法驗證，Codex 應將其標記為未驗證，
   而非虛構支持內容。
 
-### ARS v3.22.2 功能對等
+### ARS v3.23.0 功能對等
 
-本套件在 Codex 具有對等概念之處，適配上游 ARS `v3.22.2`
-（`7de1c9dfb7af9c02a9b57750761323f35a743aa2`），並記錄模型與 runtime overlay。
+本套件在 Codex 具有對等概念之處，適配上游 ARS `v3.23.0`
+（`6ab4b03bf70a118a1b3ee7f3263ed9f19031061b`），並記錄模型與 runtime overlay。
 
 Codex adapter 對書目網路行為採以下明確邊界：
 
@@ -318,9 +332,9 @@ Codex adapter 對書目網路行為採以下明確邊界：
 |---|---|
 | 單一可安裝 plugin | 原生 Codex plugin `ars-codex`，內含單一 `academic-research-suite` skill |
 | `/ars-*` 斜線指令 | 透過 skill router 作為 `ars-*` 別名模擬；非原生斜線指令 |
-| 四個上游 skill 從 `skills/` 符號連結自動發現 | 單一 Codex router skill 選擇 workflow 並讀取內嵌的 workflow `WORKFLOW.md` 檔案 |
+| 五個上游 skill 從 `skills/` 符號連結自動發現 | 單一 Codex router skill 選擇 workflow 並讀取內嵌的 workflow `WORKFLOW.md` 檔案 |
 | Plugin 隨附的 agent | 角色/階段提示詞依任務依賴與 runtime 權限，以內嵌或範圍明確的原生子 agent 執行 |
-| 重型指令（`ars-full`、`ars-reviewer`、`ars-revision-coach`）省略 `model:`，輕量模式保留 `model: sonnet` | 重型指令繼承目前 Codex session 模型；輕量模式的 `sonnet` 作為上游 Claude metadata 保留，不會覆寫 session 模型 |
+| 四個指令（`ars-full`、`ars-reviewer`、`ars-revision-coach`、`ars-citation-check`）省略 `model:`，輕量模式保留 `model: sonnet` | 這些指令繼承目前 Codex session 模型；輕量模式的 `sonnet` 作為上游 Claude metadata 保留，不會覆寫 session 模型 |
 | `ARS_MODEL_TIERING=economy\|quality-boost` | 保留 judgment/execution 分類；僅在 Codex 支援逐次 dispatch 指定模型時套用，否則維持當前模型 |
 | 受保護 agent 的 `tools:` allowlist | 保留為最小權限角色邊界；被委派的 owner 不取得 Bash 或網路 transport |
 | Canonical cross-model handoff envelope | Dispatcher 驗證 envelope、取得同意後只傳送 payload，並依封閉的結果路由 contract 執行 |

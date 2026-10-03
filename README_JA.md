@@ -1,6 +1,6 @@
 # ARS-Codex
 
-[![Version](https://img.shields.io/badge/version-v3.22.2-blue)](VERSION)
+[![Version](https://img.shields.io/badge/version-v3.23.0-blue)](VERSION)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Sponsor](https://img.shields.io/badge/sponsor-Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/crucify020v)
 
@@ -18,6 +18,7 @@ skills/academic-research-suite/
     academic-paper/
     academic-paper-reviewer/
     academic-pipeline/
+    sr-screener/
     experiment-agent/
     commands/
     hooks/
@@ -36,11 +37,11 @@ Claude Code ネイティブのスキルレイアウト、Claude 固有の agent-
 
 ## バージョニング
 
-この ARS-Codex パッケージのバージョンは `3.22.2` です。リポジトリルートの `VERSION` ファイル、`skills/academic-research-suite/SKILL.md` のメタデータバージョン、および `skills/academic-research-suite/manifest.json` の `adapter_version` は、`3.22.0` から内包する ARS スイートと同じバージョン番号を使います。過去の `0.1.x` 番号は履歴として保持します。上流のバージョン、tag、完全な commit は `manifest.source_repositories[]` に記録します。
+この ARS-Codex パッケージのバージョンは `3.23.0` です。リポジトリルートの `VERSION` ファイル、`skills/academic-research-suite/SKILL.md` のメタデータバージョン、および `skills/academic-research-suite/manifest.json` の `adapter_version` は、`3.22.0` から内包する ARS スイートと同じバージョン番号を使います。過去の `0.1.x` 番号は履歴として保持します。上流のバージョン、tag、完全な commit は `manifest.source_repositories[]` に記録します。
 
 パッケージレベルの変更内容は [`CHANGELOG.md`](CHANGELOG.md) にまとめられています。
 
-ベンダリングした ARS は **v3.22.2**、`Imbad0202/academic-research-skills@7de1c9dfb7af9c02a9b57750761323f35a743aa2` に揃えています。v3.22.1 と v3.22.2 のローカル run ledger と引き継ぎ確認、決定的な略語チェック、指示とデータの境界拡張、明示的な意図のルーティング修正、証拠に基づく中国語 APA 7 引用チェックを取り込みます。新しいツールの決定的な動作は合成テストの対象ですが、プロンプトの遵守と Codex モデルの有効性は未測定です。言語ペアは現在 `zh-tw-en` のみで、スペイン語のトリガーは出力ロケールパックの提供を意味しません。Claude のモデル監査と評価資料は参考用であり、Codex のモデル方針を変更せず、Codex の性能測定でもありません。
+ベンダリングした ARS は **v3.23.0**、`Imbad0202/academic-research-skills@6ab4b03bf70a118a1b3ee7f3263ed9f19031061b` に揃えています。このリリースは、明示的な要求で起動する `sr-screener` の文献スクリーニングを追加し、pipeline の実験データ確認、確認済みの実行全体の制約、整合性の証拠再表示、最終出力ファイルの選択、ledger の読み取りを修正します。外部 Audit Artifact Gate は opt-in となり、Stage 2.5 と 4.5 の整合性ゲートは維持されます。読解出力は各出典の方法上の弱点とその根拠を示し、所定の時点で表示するレビュー形式の案内では著者が形式を決めます。上流の `ars-citation-check` は session モデルを継承します。決定的なツールには合成テストがありますが、スクリーニング精度、プロンプトの遵守、Codex モデルの有効性は未測定です。言語ペアは現在 `zh-tw-en` のみで、スペイン語のトリガーは出力ロケールパックの提供を意味しません。Claude のモデル監査と評価資料は参考用であり、Codex のモデル方針を変更せず、Codex の性能測定でもありません。
 
 ## モデルと実行方式
 
@@ -121,7 +122,7 @@ Use $academic-research-suite to help me plan a systematic literature review on
 AI adoption in higher education quality assurance.
 ```
 
-Codex アダプターはリクエストを以下の5つの ARS ワークフローのいずれかにルーティングします。
+Codex アダプターはリクエストを以下の6つの ARS ワークフローのいずれかにルーティングします。
 
 | ワークフロー | 用途 | プロンプト例 |
 |---|---|---|
@@ -129,7 +130,10 @@ Codex アダプターはリクエストを以下の5つの ARS ワークフロ�
 | `academic-paper` | 論文のアウトライン、執筆、アブストラクト、リビジョン、引用フォーマット、AI 開示 | `Use $academic-research-suite to turn these notes into an IMRaD paper outline and drafting plan.` |
 | `academic-paper-reviewer` | 原稿レビュー、模擬ピアレビュー、編集判断、再レビュー | `Use $academic-research-suite to review this manuscript and produce a journal-style decision letter.` |
 | `academic-pipeline` | 整合性ゲート、レビュー、リビジョン、最終チェックを含むエンドツーエンドの研究→論文ワークフロー | `Use $academic-research-suite to run an end-to-end research-to-paper pipeline from topic to revised manuscript.` |
+| `sr-screener` | 明示的に要求した適格性ルール、タイトル／要旨・全文スクリーニング、裁定、監査、報告 | `Use $academic-research-suite: sr-screener ta-screen these records against my confirmed protocol.` |
 | `experiment-agent` | コード実験の計画、ヒューマンスタディプロトコル、統計的解釈、再現性検証 | `Use $academic-research-suite to plan a code experiment and define reproducibility checks.` |
+
+`sr-screener` の8モードは `protocol`、`quick`、`pilot`、`ta-screen`、`ft-screen`、`adjudicate`、`audit`、`report` です。スクリーニングは明示的な要求でのみ起動し、`deep-research` の `systematic-review` から自動移行しません。研究チームが適格性ルールを確認し、AI の判断を検証します。全件のタイトル／要旨スクリーニングには、チームのラベルと比較してチームが次段階へ進めたレコードを一件も見逃さない pilot が必要です。ユーザーによる override は記録します。両 reviewer が除外したレコードの再現可能な標本（最低20件、既定100件、それより少なければ全件）を senior reviewer が QC するまで、件数は暫定です。欠落した判断や形式不正の判断は pending のままです。スクリプトは合成テストの対象ですが、スクリーニング精度は未測定です。
 
 ### Claude スタイルのエイリアス
 
@@ -253,17 +257,17 @@ ARS は元々 Claude Code 向けに作成されました。この Codex パッ�
 - アップストリームの「fresh Claude Code session」という記述は、このパッケージでは新しい Codex セッションを意味します。Material Passport のリセットセマンティクスは引き続き適用されます。
 - 引用、ソース、統計、またはジャーナルポリシーが検証できない場合、Codex は根拠を捏生するのではなく、未検証としてマークする必要があります。
 
-### ARS v3.22.2 パリティ
+### ARS v3.23.0 パリティ
 
-このパッケージは、Codex に同等の概念が存在する範囲で、アップストリーム ARS `v3.22.2`（`7de1c9dfb7af9c02a9b57750761323f35a743aa2`）を適合し、モデルと runtime overlay を記録します。
+このパッケージは、Codex に同等の概念が存在する範囲で、アップストリーム ARS `v3.23.0`（`6ab4b03bf70a118a1b3ee7f3263ed9f19031061b`）を適合し、モデルと runtime overlay を記録します。
 
 | アップストリーム ARS 機能 | Codex パッケージの動作 |
 |---|---|
 | インストール可能な単一プラグイン | 単一の `academic-research-suite` skill を同梱するネイティブ Codex plugin `ars-codex` |
 | `/ars-*` スラッシュコマンド | スキルルータ経由で `ars-*` エイリアスとしてエミュレート。ネイティブのスラッシュコマンドではありません |
-| `skills/` シンボリックリンクから自動検出される4つのアップストリームスキル | 単一の Codex ルータスキルがワークフローを選択し、ベンダリングされたワークフロー `WORKFLOW.md` ファイルを読み込みます |
+| `skills/` シンボリックリンクから自動検出される5つのアップストリームスキル | 単一の Codex ルータスキルがワークフローを選択し、ベンダリングされたワークフロー `WORKFLOW.md` ファイルを読み込みます |
 | プラグイン同梱の agent | ロール/フェーズプロンプトを、依存関係と runtime 権限に応じてインラインまたは範囲を限定したネイティブ subagent で実行します |
-| 重いコマンド（`ars-full`、`ars-reviewer`、`ars-revision-coach`）は `model:` を省略し、軽量モードは `model: sonnet` を保持 | 重いコマンドは現在の Codex セッションモデルを継承します。軽量モードの `sonnet` はアップストリーム Claude メタデータとして保持され、セッションモデルを上書きしません |
+| 4つのコマンド（`ars-full`、`ars-reviewer`、`ars-revision-coach`、`ars-citation-check`）は `model:` を省略し、軽量モードは `model: sonnet` を保持 | これらのコマンドは現在の Codex セッションモデルを継承します。軽量モードの `sonnet` はアップストリーム Claude メタデータとして保持され、セッションモデルを上書きしません |
 | 保護対象 agent の `tools:` allowlist | 最小権限のロール境界として保持され、委譲された owner に Bash やネットワーク transport は付与されません |
 | Canonical cross-model handoff envelope | Dispatcher が envelope を検証し、同意後は payload のみを送信して、閉じた結果ルーティング contract に従います |
 | 用途を限定した Codex citation transport | 明示的に設定・要求され、同意が得られた場合のみ、狭い citation-integrity チェックに使用されます |

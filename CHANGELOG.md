@@ -4,6 +4,49 @@ All notable changes to the Codex package are documented here.
 
 ## Unreleased
 
+## [3.23.0] - 2026-10-04
+
+### What's Changed
+
+- Synced the tagged ARS v3.23.0 release at
+  `6ab4b03bf70a118a1b3ee7f3263ed9f19031061b` (released upstream on October 3),
+  preserving Codex runtime/path overlays and the separately pinned
+  experiment-agent v1.1.0.
+- Added `sr-screener` v1.0.0 as the sixth local workflow behind the single
+  Codex router. Its eight modes are `protocol`, `quick`, `pilot`, `ta-screen`,
+  `ft-screen`, `adjudicate`, `audit`, and `report`. Screening requires an
+  explicit request; `deep-research` `systematic-review` never starts it
+  automatically. Two blinded reviewer roles and an adjudicator support
+  author-confirmed eligibility rules, with local import, deduplication,
+  screening-log, RIS, PRISMA-count, methods-draft, and corpus exports.
+- Preserved screening safeguards: the full title/abstract run requires a
+  pilot against the review team's labels with no missed advanced records
+  unless the user records an override; joint exclusions need a reproducible
+  senior-reviewer QC sample (minimum 20, default 100; all when fewer are
+  available) before counts become final. Missing or malformed decisions remain
+  pending, spreadsheet exports
+  neutralise formula text, and the review team verifies AI decisions.
+  Synthetic script tests do not establish screening accuracy.
+- Adopted pipeline repairs: the external Audit Artifact Gate is opt-in and
+  off by default; the Stage 2.5 and 4.5 integrity gates remain active.
+  Experiment intake comes from the scholar's answer, confirmed run-wide
+  constraints retain the author's words, and a declined-only Major may offer
+  an author-approved limitations-only revision. Stages 5 and 6 produce only
+  requested files, while opt-in finalization refusals surface at Stage 4.5.
+- Carried forward integrity evidence replay from the orchestrator's named
+  folder, consistent integrity policy, and exclusion of sources found
+  fabricated from later revisions. Ledger `report` and `show` share trusted
+  reads; parse errors omit ledger text, and writers share atomic replacement.
+- Added provenance-labelled per-source method weaknesses, the neutral
+  author-owned review-form note, and the RQ Brief schema/producer alignment.
+  New held-out cases and routing fixtures remain bounded evaluation inputs;
+  prompt adherence and Codex model effectiveness are unmeasured.
+- Updated the upstream `ars-citation-check` recipe to inherit the session
+  model alongside `ars-full`, `ars-reviewer`, and `ars-revision-coach`.
+  Remaining `sonnet` hints are Claude metadata and do not select a Codex model.
+- Updated four-language release guidance and the materialized Desktop bundle.
+  Claude loader files and hooks remain inactive in the Codex distribution.
+
 ## [3.22.2] - 2026-09-28
 
 ### What's Changed

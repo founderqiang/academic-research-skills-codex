@@ -1,6 +1,6 @@
 # ARS-Codex
 
-[![Version](https://img.shields.io/badge/version-v3.22.2-blue)](VERSION)
+[![Version](https://img.shields.io/badge/version-v3.23.0-blue)](VERSION)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Sponsor](https://img.shields.io/badge/sponsor-Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/crucify020v)
 
@@ -28,6 +28,7 @@ skills/academic-research-suite/
     academic-paper/
     academic-paper-reviewer/
     academic-pipeline/
+    sr-screener/
     experiment-agent/
     commands/
     hooks/
@@ -51,7 +52,7 @@ Use this repo when you want the Codex-native single-suite skill.
 
 ## Versioning
 
-This ARS-Codex package is version `3.22.2`. The repo-root `VERSION` file,
+This ARS-Codex package is version `3.23.0`. The repo-root `VERSION` file,
 `skills/academic-research-suite/SKILL.md` metadata version, and
 `skills/academic-research-suite/manifest.json` `adapter_version` track the
 Codex package version in step with the vendored ARS suite, starting at `3.22.0`.
@@ -60,13 +61,17 @@ tag, and commit are recorded in `manifest.source_repositories[]`.
 
 Package-level changes are summarized in [`CHANGELOG.md`](CHANGELOG.md).
 
-The vendored ARS source tracks **v3.22.2** at
-`Imbad0202/academic-research-skills@7de1c9dfb7af9c02a9b57750761323f35a743aa2`.
-This release incorporates the v3.22.1 and v3.22.2 repairs: a local run ledger
-and rendered handoff check, a deterministic advisory acronym check, broader
-instruction/data boundaries, explicit-intent routing fixes, and evidence-bound
-Chinese APA 7 citation checks. Synthetic tests cover the new deterministic
-tools; prompt-following and Codex model effectiveness remain unmeasured.
+The vendored ARS source tracks **v3.23.0** at
+`Imbad0202/academic-research-skills@6ab4b03bf70a118a1b3ee7f3263ed9f19031061b`.
+This release adds explicit, protocol-driven study screening with `sr-screener`
+and repairs the pipeline's experiment intake, confirmed run-wide constraints,
+integrity evidence replay, final-file selection, and ledger reads. The external
+Audit Artifact Gate is now opt-in; the Stage 2.5 and 4.5 integrity gates remain.
+Reading outputs label each source's method weaknesses and their provenance;
+a fixed-point review-form note leaves the choice with the author.
+`ars-citation-check` now inherits the session model upstream. Synthetic tests
+cover deterministic tools; screening accuracy, prompt-following, and Codex
+model effectiveness remain unmeasured.
 The output-language-pair registry still supports only `zh-tw-en`; Spanish
 triggers do not install a Spanish output-locale pack. Claude model audits and
 plugin eval suites are reference material and do not change the Codex model
@@ -186,7 +191,7 @@ Use $academic-research-suite to help me plan a systematic literature review on
 AI adoption in higher education quality assurance.
 ```
 
-The Codex adapter routes the request to one of five ARS workflows:
+The Codex adapter routes the request to one of six ARS workflows:
 
 | Workflow | Use when you need | Example prompt |
 |---|---|---|
@@ -194,7 +199,19 @@ The Codex adapter routes the request to one of five ARS workflows:
 | `academic-paper` | Paper outline, drafting, abstract, revision, citation formatting, AI disclosure | `Use $academic-research-suite to turn these notes into an IMRaD paper outline and drafting plan.` |
 | `academic-paper-reviewer` | Manuscript review, simulated peer review, editorial decision, re-review | `Use $academic-research-suite to review this manuscript and produce a journal-style decision letter.` |
 | `academic-pipeline` | End-to-end research-to-paper workflow with integrity gates, review, revision, and final checks | `Use $academic-research-suite to run an end-to-end research-to-paper pipeline from topic to revised manuscript.` |
+| `sr-screener` | Explicitly requested protocol rules, title/abstract or full-text screening, adjudication, audit, and reporting | `Use $academic-research-suite: sr-screener ta-screen these records against my confirmed protocol.` |
 | `experiment-agent` | Code experiment planning, human study protocol, statistical interpretation, reproducibility validation | `Use $academic-research-suite to plan a code experiment and define reproducibility checks.` |
+
+`sr-screener` has eight modes: `protocol`, `quick`, `pilot`, `ta-screen`,
+`ft-screen`, `adjudicate`, `audit`, and `report`. Screening starts only on an
+explicit request; `deep-research` `systematic-review` never hands off to it
+automatically. The review team confirms the eligibility rules and verifies AI
+decisions. Full title/abstract screening requires a pilot comparison with the
+team's labels that misses no record the team advanced, unless the user records
+an override. Counts remain provisional until a senior reviewer completes QC
+of a reproducible sample of jointly excluded records (minimum 20, default 100; all exclusions when fewer are available).
+Missing or malformed decisions remain pending. Synthetic tests exercise the
+scripts; screening accuracy has not been measured.
 
 ### Claude-Style Aliases
 
@@ -393,10 +410,10 @@ ARS was originally written for Claude Code. In this Codex package:
 - If a citation, source, statistic, or journal policy cannot be verified, Codex
   should mark it as unverified rather than invent support.
 
-### ARS v3.22.2 Parity
+### ARS v3.23.0 Parity
 
-This package adapts upstream ARS `v3.22.2` at
-`7de1c9dfb7af9c02a9b57750761323f35a743aa2` wherever Codex has an equivalent
+This package adapts upstream ARS `v3.23.0` at
+`6ab4b03bf70a118a1b3ee7f3263ed9f19031061b` wherever Codex has an equivalent
 concept, with documented model/runtime overlays.
 
 Bibliographic network behavior is intentionally explicit at the Codex adapter
@@ -414,10 +431,10 @@ boundary:
 |---|---|
 | One installable plugin | Native Codex plugin `ars-codex`, bundling the single `academic-research-suite` skill |
 | `/ars-*` slash commands | Emulated as `ars-*` aliases through the skill router; not native slash commands |
-| Four upstream skills auto-discovered from `skills/` symlinks | Single Codex router skill selects the workflow and reads the vendored workflow `WORKFLOW.md` files |
+| Five upstream skills auto-discovered from `skills/` symlinks | Single Codex router skill selects the workflow and reads the vendored workflow `WORKFLOW.md` files |
 | Plugin-shipped agents | Role/phase prompts run inline or as bounded native subagents according to task dependencies and runtime permissions |
 | Optional Codex full-runtime profile | Planner, agent-team templates, and hook pack live under `skills/academic-research-suite/codex/`; disabled by default |
-| Heavy commands (`ars-full`, `ars-reviewer`, `ars-revision-coach`) omit `model:`; light modes retain `model: sonnet` | Heavy commands inherit the current Codex session model; light-mode `sonnet` remains upstream Claude metadata and does not override the session model |
+| Four commands (`ars-full`, `ars-reviewer`, `ars-revision-coach`, `ars-citation-check`) omit `model:`; light modes retain `model: sonnet` | These commands inherit the current Codex session model; light-mode `sonnet` remains upstream Claude metadata and does not override the session model |
 | `ARS_MODEL_TIERING=economy\|quality-boost` | Classification is preserved; routing remains advisory unless Codex exposes per-dispatch model selection |
 | Protected agent `tools:` allowlists | Preserved as least-privilege role boundaries; dispatched owners do not receive Bash/network transport |
 | Canonical cross-model handoff envelope | Dispatcher validates the envelope, transports only the payload after consent, and follows the closed result-routing contract |

@@ -13,8 +13,8 @@ adds four pieces:
 1. `full-runtime-manifest.json` defines alias routing, workflow mapping,
    agent-team rules, hook metadata, quality gates, and known degradations.
 2. `agents/*.md` defines Codex agent-team templates for deep research,
-   academic paper writing, academic pipeline orchestration, paper review, and
-   experiment planning.
+   academic paper writing, academic pipeline orchestration, paper review,
+   study screening, and experiment planning.
 3. `scripts/ars_codex_full_runtime.py` produces deterministic JSON route plans.
    It is read-only and does not spawn agents or execute hooks.
 4. `hooks/` contains a disabled-by-default read-only hook pack. It must be
@@ -72,14 +72,51 @@ python3 skills/academic-research-suite/codex/scripts/ars_codex_full_runtime.py -
   "ars-reviewer full review for this manuscript."
 ```
 
-## ARS v3.22.2 Runtime Boundaries
+## ARS v3.23.0 Runtime Boundaries
 
-The package tracks the ARS v3.22.2 tag at
-`7de1c9dfb7af9c02a9b57750761323f35a743aa2`, including the v3.22.1 repairs.
-The run ledger and acronym checker have deterministic synthetic tests;
-whether a model follows the caller instructions remains unmeasured. Upstream
-Claude audits and routing/evaluation runs do not measure Codex effectiveness
-or change the Codex model policy. Claude startup hooks remain inactive.
+The package tracks the ARS v3.23.0 tag at
+`6ab4b03bf70a118a1b3ee7f3263ed9f19031061b`. Five ARS workflows and the separately
+pinned experiment-agent are exposed through one Codex router. Deterministic
+tools have synthetic tests; screening accuracy and whether a model follows the
+caller instructions remain unmeasured. Upstream Claude audits and
+routing/evaluation runs do not measure Codex effectiveness or change the Codex
+model policy. Claude startup hooks remain inactive.
+
+- `sr-screener` is an explicitly requested workflow with eight modes:
+  `protocol`, `quick`, `pilot`, `ta-screen`, `ft-screen`, `adjudicate`, `audit`,
+  and `report`. A request for `deep-research` `systematic-review` does not
+  activate screening or cause an automatic handoff. The author confirms the
+  eligibility rules; two blinded reviewer roles and an adjudicator provide
+  decision support for the review team to verify. Missing or malformed
+  decisions stay pending.
+- Full title/abstract screening requires a pilot compared with the team's
+  labels that misses no record the team advanced, unless the author records
+  an override. A reproducible sample of joint exclusions (minimum 20, default
+  100; all when fewer are available) requires senior-reviewer QC before counts
+  become final. Spreadsheet
+  exports neutralise formula text. Upstream Sonnet screening defaults are
+  Claude metadata; native Codex execution follows the active model policy.
+- The external v3.6.7 Audit Artifact Gate is disabled by default and requires
+  `ARS_AUDIT_ARTIFACT_GATE=1` plus explicit run-bound consent to invoke the
+  external wrapper. Stage 2.5 and 4.5 integrity gates remain in force.
+  Experiment intake is recorded from the scholar's answer before the first
+  writer or integrity gate that needs it, never inferred from the manuscript.
+- Run-wide constraints enter `standing_constraints[]` only after author
+  confirmation and retain the author's words. Applicable dispatches quote
+  them; review stages apply them at the author checkpoint to preserve review
+  blindness. A declined-only Major keeps the review decision and can offer an
+  author-approved limitations-only revision. Finalization creates only the
+  requested files, with opt-in Stage 5 refusals surfaced at Stage 4.5.
+- Integrity checkpoints replay the evidence rows from the folder named by the
+  orchestrator, apply a consistent policy, and retain paywalled sources as
+  notes. A source found fabricated stays excluded from later revisions.
+- Per-source method weaknesses distinguish author-acknowledged limitations
+  from reader inferences and preserve read-scope limits. The fixed-point
+  review-form note leaves the choice with the author; it never selects or
+  ranks a review form or starts screening.
+- `ars-citation-check` now omits the upstream model pin alongside `ars-full`,
+  `ars-reviewer`, and `ars-revision-coach`. These four commands inherit the
+  session model; remaining `sonnet` hints do not select a Codex model.
 
 - With a passport file, pipeline prompts instruct the caller to use
   `ars/scripts/run_ledger.py` to record exact user words, checkpoint exchanges,
@@ -89,8 +126,11 @@ or change the Codex model policy. Claude startup hooks remain inactive.
   returns, `report --render en` or `--render zh-TW` supplies the handoff check
   verbatim when it has findings. Append computes named input hashes and report
   rechecks them; missing or changed inputs cannot back a completed step.
-  A missing or unreadable ledger backs nothing, and a broken hash chain backs
-  nothing from the break onward. The chain detects accidental damage, not
+  The caller reads entries only through `report` or `show`, which share the
+  trusted-reader break rule; parse errors give the error kind and position
+  without quoting ledger text. A missing or unreadable ledger backs nothing,
+  and a broken hash chain backs nothing from the break onward. The chain
+  detects accidental damage, not
   deliberate edits, a lost tail, or rollback. Skill deliverable ownership and
   ledger entries do not independently establish or widen user authorization.
 - The dispatching session runs `ars/scripts/check_acronyms.py` locally on saved
